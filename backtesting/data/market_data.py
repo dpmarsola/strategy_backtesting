@@ -3,7 +3,7 @@ from .. import constants
 
 def select_market_data_by_period(asset, period):
     
-    datetime_obj = period.to_pydatetime().strftime("%Y-%m-%d %H:%M:%S.000000")
+    datetime_obj = period.to_pydatetime().strftime("%Y-%m-%d %H:%M:%S")
     
     try:
         with sqlite3.connect(f'{constants.DATABASE_NAME}') as conn:

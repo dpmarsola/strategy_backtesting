@@ -1,16 +1,15 @@
 from . import constants
 from .data import simulation as sim
 from .data import account_position as acc
-from . import information as info
+from . import decision_helper as dh
 from . import parms
 
-dmaker = info.Information()
-
+dhelper = dh.Decision_Helper()
 class Operate():
     
     def send_buy_order(self, simulation_id, position_quantity, position_type, amount, asset, period):
                 
-        open, high, low, close = dmaker.get_asset_current_market_price(asset, period)
+        open, high, low, close = dhelper.get_asset_current_market_price(asset, period)
         
         if open == None:
             return 0,0
@@ -23,7 +22,7 @@ class Operate():
             
     def send_sell_order(self, simulation_id, position_quantity, position_type, amount, asset, period):
                 
-        open, high, low, close = dmaker.get_asset_current_market_price(asset, period)
+        open, high, low, close = dhelper.get_asset_current_market_price(asset, period)
         
         if open == None:
             return 0,0
@@ -36,8 +35,8 @@ class Operate():
     def open_position(self, simulation_id, period, asset, position_type):
         
         # determine the position_quantity and then execute a buy or sell operation
-        exposed_amount = dmaker.determine_amount_to_expose(simulation_id)
-        asset_current_market_price,_,_,_ = dmaker.get_asset_current_market_price(asset, period)
+        exposed_amount = dhelper.determine_amount_to_expose(simulation_id)
+        asset_current_market_price,_,_,_ = dhelper.get_asset_current_market_price(asset, period)
         
         if asset_current_market_price == None:
             return 0
@@ -67,7 +66,7 @@ class Operate():
  
     def close_position(self, simulation_id, period, asset):
         
-        position_type, exposed_amount, position_quantity = dmaker.get_position_information(simulation_id)
+        position_type, exposed_amount, position_quantity = dhelper.get_position_information(simulation_id)
                 
         if position_type == constants.LONG:
             effective_amount, effective_quantity = self.send_sell_order(simulation_id, position_quantity, position_type, exposed_amount, asset, period)

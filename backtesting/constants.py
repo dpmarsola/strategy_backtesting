@@ -1,7 +1,8 @@
-DATABASE_NAME  = "robotrader.db"
+DATABASE_NAME  = "data.db"
 ACCOUNT_POSITION_TABLE = "account_position"
 SIMULATION_TABLE = "simulation"
 MARKET_DATA_TABLE = "market_data"
+STATE_DATA = "state_data"
 
 GET_IN = "get_in"
 GET_OUT = "get_out"

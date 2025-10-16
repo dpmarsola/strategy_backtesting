@@ -1,8 +1,10 @@
 import pandas as pd
 import requests
-from sqlalchemy import create_engine
 import sys
 import warnings
+from sqlalchemy import create_engine
+import os
+from .data import connection
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 ticker = sys.argv[1]
@@ -22,11 +24,11 @@ df['datetime'] = pd.to_datetime(df['time'], unit='s')
 
 df['asset'] = ticker
 
-engine = create_engine('sqlite:///robotrader.db')
+# engine = create_engine('sqlite:///robotrader.db')
+conn = connection.get_connection()
+df.to_sql(name="market_data", con=conn, if_exists='replace', index=False)
 
-df.to_sql(name="market_data", con=engine, if_exists='replace', index=False)
-
-read_df = pd.read_sql_table('market_data', con=engine)
+conn = connection.get_connection()
 
 print("Data fetched successfully!")
      

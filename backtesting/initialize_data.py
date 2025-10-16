@@ -3,14 +3,16 @@ from .data import simulation as sim
 from .data import account_position as acc
 from .data import initialize_db as init_db
 
-
 def initialize_database():
     
-    init_db.create_database()
+    return init_db.create_database()
     
     
 def initialize_tables(start_date, end_date, frequency, asset, initial_balance):
 
+    data_dir = f'./{init_db.__package__.replace(".","/")}'
+    init_db.create_tables(data_dir)
+    
     # Create a new simulation ID and initilize the simulation
     curr_date = datetime.now()
     formmatted_date = curr_date.strftime("%Y%m%d_%H%M")

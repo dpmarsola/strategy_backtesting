@@ -5,7 +5,7 @@ from . import parms
 from . import constants
 
 
-class Information():
+class Decision_Helper():
     
     flag = True
     position_type = ""
