@@ -1,5 +1,5 @@
 from .data import simulation as sim
-from .data import account_position as acc
+from .data import trades as trd
 from .data import market_data as mkt
 from . import parms
 from . import constants
@@ -12,21 +12,35 @@ class Decision_Helper():
     position_amount = 0
     position_quantity = 0
 
-    def check_status_positioned(self, simulation_id):
+    def check_trade_status(self, simulation_id):
         
-        result = {"positioned" : False,
-                  "position_amount" : 0,
-                  "position_type" : constants.NA}
-
-        _,_,self.position_type,self.position_amount,self.position_quantity,_ = acc.select_account_position_data_by_simulation_id(simulation_id)    
+        trade = {
+            "trade_open_date" : 0,
+            "simulation_id" : '',
+            "asset_under_simulation" : '',
+            "position_type" : '',
+            "position_amount" : 0,
+            "position_quantity" : 0,
+            "trade_close_date" : '',
+            "trade_close_amount" : 0,
+            "profit_amount" : 0,
+            "profit_percentage" : 0,
+            "positioned" : False
+            }
         
-        if self.position_type != constants.NA:
-            result["position_amount"] = self.position_amount
-            result["position_type"] = self.position_type
-            result["position_quantity"] = self.position_quantity
-            result["positioned"] = True
+        try:
+            trades = trd.select_trades_data_by_simulation_id(simulation_id)
+            
+            if len(trades) == 0:
+                trade['positioned'] = False
+                
+            for trade in trades:
+                if trade['trade_close_amount'] == 0:
+                    trade['positioned'] = True
+        except Exception as e:
+            trade['positioned'] = False
 
-        return result 
+        return trade
 
     def determine_amount_to_expose(self, simulation_id):
         
@@ -35,13 +49,7 @@ class Decision_Helper():
         exposable_amount = current_balance * (int(parms.EXPOSABLE_PERCENTAGE)) // 100
         
         return exposable_amount
-    
-    def get_position_information(self, simulation_id):
         
-        _,_,position_type,exposed_amount,position_quantity,_ = acc.select_account_position_data_by_simulation_id(simulation_id)
-        
-        return (position_type, exposed_amount, position_quantity)
-    
     def get_asset_current_market_price(self, asset, period):
         
         try:

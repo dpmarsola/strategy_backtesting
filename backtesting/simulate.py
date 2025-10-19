@@ -3,7 +3,7 @@ import pandas as pd
 from . import initialize_data as init_data
 from . import decision_helper as dh
 from . import operate as op
-from . import constants
+from . import process_cycle as pc
 
 dhelper = dh.Decision_Helper()
 operate = op.Operate()
@@ -18,19 +18,8 @@ def simulate(start_date: str, end_date: str, frequency: str, asset: str, initial
     # process periods
     periods_range = pd.date_range(start=start_date, end=end_date, freq=frequency)
 
-    for period in periods_range:
-        
-        print(f'Processing date: {period.strftime("%d/%m/%Y")}')
-        
-        status = dhelper.check_status_positioned(simulation_id)
-        
-        if status["positioned"] == True:
-            decision = strategy.signal_out(period)
-            if decision == constants.GET_OUT:
-                operate.close_position(simulation_id, period, asset)
-        else:
-            decision, position_type = strategy.signal_in(period)
-            if decision == constants.GET_IN:
-                operate.open_position(simulation_id, period, asset, position_type)
+    for current_date in periods_range:
+        print(f'Processing date: {current_date.strftime("%d/%m/%Y")}')
+        pc.process_cycle(simulation_id, current_date, asset, strategy)
     
     print(f'Simulation completed!')

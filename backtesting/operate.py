@@ -1,6 +1,6 @@
 from . import constants
 from .data import simulation as sim
-from .data import account_position as acc
+from .data import trades
 from . import decision_helper as dh
 from . import parms
 
@@ -32,11 +32,11 @@ class Operate():
 
         return effective_amount, effective_quantity
             
-    def open_position(self, simulation_id, period, asset, position_type):
+    def open_position(self, simulation_id, current_date, asset, position_type):
         
         # determine the position_quantity and then execute a buy or sell operation
         exposed_amount = dhelper.determine_amount_to_expose(simulation_id)
-        asset_current_market_price,_,_,_ = dhelper.get_asset_current_market_price(asset, period)
+        asset_current_market_price,_,_,_ = dhelper.get_asset_current_market_price(asset, current_date)
         
         if asset_current_market_price == None:
             return 0
@@ -46,7 +46,7 @@ class Operate():
             
             # If the maximum possible quantity is less than 1 LOT_SIZE then this position cannot be opened.
             if parms.LOT_SIZE > max_quantity_possible:
-                raise ValueError(f"Amount exposed {exposed_amount} is too low and inssuficient to buy the minimun lot size ({parms.LOT_SIZE}) at the current value of the asset ({asset_current_market_price})")
+                raise ValueError(f"Amount exposed {exposed_amount} is too low to buy the minimun lot size ({parms.LOT_SIZE}) at the current value of the asset ({asset_current_market_price})")
 
             # Now make this possible quantity fit as a multiple of the LOT_SIZE and get rid of the excess
             excess_quantity = max_quantity_possible % parms.LOT_SIZE
@@ -54,30 +54,30 @@ class Operate():
             fitted_amount = asset_current_market_price * max_quantity_possible
                     
             if position_type == constants.LONG:
-                effective_amount, effective_quantity = self.send_buy_order(simulation_id, max_quantity_possible, position_type, fitted_amount, asset, period)
+                effective_amount, effective_quantity = self.send_buy_order(simulation_id, max_quantity_possible, position_type, fitted_amount, asset, current_date)
             else:
-                effective_amount, effective_quantity = self.send_sell_order(simulation_id, max_quantity_possible, position_type, fitted_amount, asset, period)
+                effective_amount, effective_quantity = self.send_sell_order(simulation_id, max_quantity_possible, position_type, fitted_amount, asset, current_date)
             
             if effective_amount > 0:
                 # debit from simulation's current_position
                 sim.update_simulation_current_balance(simulation_id, effective_amount, True)
-                # add position and position_type to account_position's
-                acc.update_account_position_balance(simulation_id, effective_amount, position_type, effective_quantity)
+                # add a trade to the trades history
+                trades.insert_trades_data(current_date, simulation_id, asset, position_type, effective_amount, effective_quantity, constants.ZERO, constants.ZERO, constants.ZERO, constants.ZERO)
  
-    def close_position(self, simulation_id, period, asset):
+    def close_position(self, simulation_id, current_date, trade, asset):
         
-        position_type, exposed_amount, position_quantity = dhelper.get_position_information(simulation_id)
-                
-        if position_type == constants.LONG:
-            effective_amount, effective_quantity = self.send_sell_order(simulation_id, position_quantity, position_type, exposed_amount, asset, period)
+        if trade['position_type'] == constants.LONG:
+            effective_amount, effective_quantity = self.send_sell_order(simulation_id, trade['position_quantity'], trade['position_type'], trade['position_amount'], asset, current_date)
         else:
-            effective_amount, effective_quantity = self.send_buy_order(simulation_id, position_quantity, position_type, exposed_amount, asset, period)
+            effective_amount, effective_quantity = self.send_buy_order(simulation_id, trade['position_quantity'], trade['position_type'], trade['position_amount'], asset, current_date)
             
         if effective_amount > 0:
-            # cretid simulation's current_position
+            # credit simulation's current_position
             sim.update_simulation_current_balance(simulation_id, effective_amount, False)
-            # initialize the position information in account_position's
-            initial_amount = constants.ZERO
-            initial_position_type = constants.NA
-            initial_position_quantity = constants.ZERO            
-            acc.update_account_position_balance(simulation_id, initial_amount, initial_position_type, initial_position_quantity)
+            # calculate the profit or loss and update in trades history
+            
+            trade_close_date = current_date
+            trade_close_amount = effective_amount
+            profit_amount = effective_amount - trade['position_amount']
+            profit_percentage = ((trade_close_amount / trade['position_amount']) - 1) * 100
+            trades.update_account_position_balance(simulation_id, trade['trade_open_date'], trade_close_date, trade_close_amount, profit_amount, profit_percentage)

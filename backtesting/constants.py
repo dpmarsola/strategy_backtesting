@@ -1,5 +1,5 @@
 DATABASE_NAME  = "data.db"
-ACCOUNT_POSITION_TABLE = "account_position"
+TRADES_TABLE = "trades"
 SIMULATION_TABLE = "simulation"
 MARKET_DATA_TABLE = "market_data"
 STATE_DATA = "state_data"

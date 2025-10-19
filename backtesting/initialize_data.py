@@ -1,6 +1,6 @@
 from datetime import datetime
 from .data import simulation as sim
-from .data import account_position as acc
+from .data import trades
 from .data import initialize_db as init_db
 
 def initialize_database():
@@ -21,8 +21,5 @@ def initialize_tables(start_date, end_date, frequency, asset, initial_balance):
  
     if result == None:
         sim.insert_simulation_data((simulation_id, start_date, end_date, frequency, asset, initial_balance, initial_balance))
-        account_id = simulation_id.replace("sim", "acc")
-        account_name = asset
-        acc.insert_account_position_data((account_id, account_name, "NA", 0, 0, simulation_id))
         
     return simulation_id
