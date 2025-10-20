@@ -3,12 +3,12 @@ from .data import simulation as sim
 from .data import trades
 from .data import initialize_db as init_db
 
-def initialize_database():
+def database_init():
     
     return init_db.create_database()
     
     
-def initialize_tables(start_date, end_date, frequency, asset, initial_balance):
+def tables_init(start_date, end_date, frequency, asset, initial_balance):
 
     data_dir = f'./{init_db.__package__.replace(".","/")}'
     init_db.create_tables(data_dir)

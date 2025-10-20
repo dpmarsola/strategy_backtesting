@@ -13,3 +13,18 @@ SHORT = "short"
 LONG = "long"
 NA = "NA"
 ZERO = 0
+
+OPEN = 'open'
+CLOSE = 'close'
+HIGH = 'high'
+LOW = 'low'
+
+WIN = "win"
+LOOSE = "loose"
+
+FREQUENCY = { 
+             'H' : 'Hourly',
+             'D' : 'Daily',
+             'W' : 'Weekly',
+             'M' : 'Montly' 
+            }

@@ -29,4 +29,5 @@ frequency = 'D'
 asset = "ITSA4"
 initial_balance = 10000.00
 
-sim.simulate(start_date, end_date, frequency, asset, initial_balance, Strategy())
+sim.register_strategy(Strategy())
+sim.simulate(start_date, end_date, frequency, asset, initial_balance)
