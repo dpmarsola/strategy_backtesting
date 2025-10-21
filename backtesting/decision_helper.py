@@ -2,9 +2,10 @@ from .data import simulation as sim
 from .data import trades as trd
 from .data import market_data as mkt
 from . import parms
+from . import memory_store
 from . import constants
 
-
+mstore=memory_store.MermoryStore()
 class Decision_Helper():
     
     flag = True
@@ -46,7 +47,7 @@ class Decision_Helper():
 
         simulation = sim.select_simulation_data_by_id(simulation_id)
         
-        exposable_amount = simulation['current_balance'] * (int(parms.EXPOSABLE_PERCENTAGE)) // 100
+        exposable_amount = simulation['current_balance'] * (int(mstore.get(constants.EXPOSABLE_PERCENTAGE))) // 100
         
         return exposable_amount
         

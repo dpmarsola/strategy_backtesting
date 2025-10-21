@@ -4,6 +4,10 @@ SIMULATION_TABLE = "simulation"
 MARKET_DATA_TABLE = "market_data"
 STATE_DATA = "state_data"
 
+EXPOSABLE_PERCENTAGE = "exposable_percentage"
+LOT_SIZE = "lot_size"
+PRICES_BASED_ON = "prices_based_on"
+
 GET_IN = "get_in"
 GET_OUT = "get_out"
 STAY = "stay"

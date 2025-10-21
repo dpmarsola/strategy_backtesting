@@ -13,17 +13,18 @@ mstore = memory_store.MermoryStore()
 def execute(simulation_id, current_date, asset):
     
     market_price = dhelper.get_asset_current_market_price(asset, current_date)
+    prices_based_on = mstore.get(constants.PRICES_BASED_ON)
     
-    if parms.PRICES_BASED_ON == constants.OPEN:
+    if prices_based_on == constants.OPEN:
         asset_current_market_price = market_price['open']
     
-    if parms.PRICES_BASED_ON == constants.HIGH:
+    if prices_based_on == constants.HIGH:
         asset_current_market_price = market_price['high']
     
-    if parms.PRICES_BASED_ON == constants.LOW:
+    if prices_based_on == constants.LOW:
         asset_current_market_price = market_price['low']
     
-    if parms.PRICES_BASED_ON == constants.CLOSE:
+    if prices_based_on == constants.CLOSE:
         asset_current_market_price = market_price['close']
         
     if asset_current_market_price != None:

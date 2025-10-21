@@ -3,7 +3,9 @@ from .data import simulation
 from .data import trades
 from . import decision_helper
 from . import parms
+from . import memory_store
 
+mstore = memory_store.MermoryStore()
 dhelper = decision_helper.Decision_Helper()
 class Operate():
     
@@ -21,13 +23,14 @@ class Operate():
         
         # given the amount to be exposed, determine the maximum quantity that is possible to operate under current market price of this asset
         max_quantity_possible = exposed_amount // asset_current_market_price
+        lot_size = mstore.get(constants.LOT_SIZE)
         
         # If the maximum possible quantity is less than 1 LOT_SIZE then this position cannot be opened.
-        if parms.LOT_SIZE > max_quantity_possible:
-            raise ValueError(f"Amount exposed {exposed_amount} is too low to buy the minimun lot size ({parms.LOT_SIZE}) at the current value of the asset ({asset_current_market_price})")
+        if lot_size > max_quantity_possible:
+            raise ValueError(f"Amount exposed {exposed_amount} is too low to buy the minimun lot size ({lot_size}) at the current value of the asset ({asset_current_market_price})")
 
         # Now make this possible quantity fit as a multiple of the LOT_SIZE and get rid of the excess
-        excess_quantity = max_quantity_possible % parms.LOT_SIZE
+        excess_quantity = max_quantity_possible % lot_size
         max_quantity_possible = max_quantity_possible - excess_quantity
         fitted_amount = asset_current_market_price * max_quantity_possible
                 

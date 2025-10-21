@@ -107,10 +107,11 @@ def totalizations(simulation_id: str, period: str):
 
     # Header section    
     asset = simulation_data['asset_under_simulation']
-    period_range = f"From: {simulation_data['cycle_start']} To: {simulation_data['cycle_end']} with a frequency: {constants.FREQUENCY[simulation_data['frequency']]}"
-    model = f"Orders are sent on market data with the value based on the {parms.PRICES_BASED_ON.upper()} price"
-    exposable_percentage = f"Exposing a maximum of {parms.EXPOSABLE_PERCENTAGE}% of the available (current) balance on each trade"
-    lot_size = f'{parms.LOT_SIZE} shares/lot'    
+    period_range = f"From: {simulation_data['cycle_start']} To: {simulation_data['cycle_end']}"
+    frequency = f"{constants.FREQUENCY[simulation_data['frequency']]}"
+    model = f"Orders are sent on market data with the value based on the {mstore.get(constants.PRICES_BASED_ON).upper()} price"
+    exposable_percentage = f"Exposing a maximum of {mstore.get(constants.EXPOSABLE_PERCENTAGE)}% of the available (current) balance on each trade"
+    lot_size = f'{mstore.get(constants.LOT_SIZE)} shares/lot'    
     number_of_testing_days = mstore.get("counter_testing_days")
     
     #General View
@@ -152,6 +153,7 @@ def totalizations(simulation_id: str, period: str):
     output += f'\n'
     output += f' Asset Under Simulation ......: {asset}\n'
     output += f' Period ......................: {period_range}\n'
+    output += f' Frequency ...................: {frequency}\n'
     output += f' Model .......................: {model}\n'
     output += f' Capital Exposed (%) .........: {exposable_percentage}\n'
     output += f' Lot Size ....................: {lot_size}\n'
@@ -172,14 +174,14 @@ def totalizations(simulation_id: str, period: str):
     output += f' # of Trades Executed .......:{"":>38}{total_short_trades:>8}{"":>20}{total_long_trades:>8}{"":>20}{total_trades:>8}\n'
     output += f' # of Winners ...............:{"":>38}{total_short_winner_trades:>8}{"":>20}{total_long_winner_trades:>8}{"":>20}{total_winner_trades:>8}\n'
     output += f' # of Losers ................:{"":>38}{total_short_loser_trades:>8}{"":>20}{total_long_loser_trades:>8}{"":>20}{total_loser_trades:>8}\n'
-    output += f' Gross Profit Trades ........:{"":>38}{gross_profit_short_trades:>8}{"":>20}{gross_profit_long_trades:>8}{"":>20}{gross_profit_total:>8}\n'
-    output += f' Gross Loss Trades ..........:{"":>38}{gross_loss_short_trades:>8}{"":>20}{gross_loss_long_trades:>8}{"":>20}{gross_loss_total:>8}\n'
+    output += f' Gross Profit Trades ........:{"":>38}{gross_profit_short_trades:>8.2f}{"":>20}{gross_profit_long_trades:>8.2f}{"":>20}{gross_profit_total:>8.2f}\n'
+    output += f' Gross Loss Trades ..........:{"":>38}{gross_loss_short_trades:>8.2f}{"":>20}{gross_loss_long_trades:>8.2f}{"":>20}{gross_loss_total:>8.2f}\n'
     # output += f'\n'
     # output += f'\n'
     # output += f'{"":>15}OTHER STATISTICS{"":>37}SHORT{"":>23}LONG{"":>23}OVERALL\n'
     # output += f'{"-"*50}{"":>10}{"-"*19}{"":>9}{"-"*19}{"":>9}{"-"*19}{"":>19}\n'
-    output += f' Largest Winner Trade .......:{"":>38}{largest_short_profit_trade:>8}{"":>20}{largest_long_profit_trade:>8}{"":>20}{largest_short_profit_trade if largest_short_profit_trade > largest_long_profit_trade else largest_long_profit_trade:>8}\n'
-    output += f' Largest Loser Trade ........:{"":>38}{largest_short_loss_trade:>8}{"":>20}{largest_long_loss_trade:>8}{"":>20}{largest_short_loss_trade if largest_short_loss_trade < largest_long_loss_trade else largest_long_loss_trade:>8}\n'
+    output += f' Largest Winner Trade .......:{"":>38}{largest_short_profit_trade:>8.2f}{"":>20}{largest_long_profit_trade:>8.2f}{"":>20}{largest_short_profit_trade if largest_short_profit_trade > largest_long_profit_trade else largest_long_profit_trade:>8.2f}\n'
+    output += f' Largest Loser Trade ........:{"":>38}{largest_short_loss_trade:>8.2f}{"":>20}{largest_long_loss_trade:>8.2f}{"":>20}{largest_short_loss_trade if largest_short_loss_trade < largest_long_loss_trade else largest_long_loss_trade:>8.2f}\n'
     output += f' Most Consecutive Wins ......:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{maximum_consecutive_wins:>8}\n'
     output += f' Most Consecutive Losses ....:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{maximum_consecutive_losses:>8}\n'
     output += f' Avg Consecutive Wins .......:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{average_consecutive_wins:>8}\n'
