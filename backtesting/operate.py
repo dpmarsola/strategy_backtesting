@@ -27,7 +27,7 @@ class Operate():
         
         # If the maximum possible quantity is less than 1 LOT_SIZE then this position cannot be opened.
         if lot_size > max_quantity_possible:
-            raise ValueError(f"Amount exposed {exposed_amount} is too low to buy the minimun lot size ({lot_size}) at the current value of the asset ({asset_current_market_price})")
+            raise ValueError(f"Amount exposed {exposed_amount} is too low to buy the minimun lot size ({lot_size}) at the current value of the asset ({asset_current_market_price}) on date ({current_date.strftime('%d-%m-%Y')}).")
 
         # Now make this possible quantity fit as a multiple of the LOT_SIZE and get rid of the excess
         excess_quantity = max_quantity_possible % lot_size

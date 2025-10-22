@@ -8,7 +8,7 @@ import pandas as pd
 
 mstore = memory_store.MermoryStore()
 
-def totalizations(simulation_id: str, period: str):
+def totalizations(simulation_id: str, period: str, error_message: str):
     
     # getting the data need from the tables
     simulation_data = simulation.select_simulation_data_by_id(simulation_id)
@@ -160,33 +160,39 @@ def totalizations(simulation_id: str, period: str):
     output += f' # of trading days analyzed ..: {number_of_testing_days}\n'
     output += f'\n'
     output += f'\n'
-    output += f'{"":>15}MAIN RESULTS\n'
-    output += f'{"-"*50}'
-    output += f'\n'
-    output += f' Initial Balance .............: {initial_balance:>15.2f}\n'
-    output += f' Final Balance ...............: {final_balance:>15.2f}\n'
-    output += f' Net Profit ..................: {net_profit:>15.2f}\n'
-    output += f' Profit (%) ..................: {profit_percentage:>15.2f}\n'
-    output += f'\n'
-    output += f'\n'
-    output += f'{"":>15}TRADE STATISTICS{"":>37}SHORT{"":>23}LONG{"":>22}OVERALL\n'
-    output += f'{"-"*50}{"":>10}{"-"*19}{"":>9}{"-"*19}{"":>9}{"-"*19}{"":>19}\n'
-    output += f' # of Trades Executed .......:{"":>38}{total_short_trades:>8}{"":>20}{total_long_trades:>8}{"":>20}{total_trades:>8}\n'
-    output += f' # of Winners ...............:{"":>38}{total_short_winner_trades:>8}{"":>20}{total_long_winner_trades:>8}{"":>20}{total_winner_trades:>8}\n'
-    output += f' # of Losers ................:{"":>38}{total_short_loser_trades:>8}{"":>20}{total_long_loser_trades:>8}{"":>20}{total_loser_trades:>8}\n'
-    output += f' Gross Profit Trades ........:{"":>38}{gross_profit_short_trades:>8.2f}{"":>20}{gross_profit_long_trades:>8.2f}{"":>20}{gross_profit_total:>8.2f}\n'
-    output += f' Gross Loss Trades ..........:{"":>38}{gross_loss_short_trades:>8.2f}{"":>20}{gross_loss_long_trades:>8.2f}{"":>20}{gross_loss_total:>8.2f}\n'
-    # output += f'\n'
-    # output += f'\n'
-    # output += f'{"":>15}OTHER STATISTICS{"":>37}SHORT{"":>23}LONG{"":>23}OVERALL\n'
-    # output += f'{"-"*50}{"":>10}{"-"*19}{"":>9}{"-"*19}{"":>9}{"-"*19}{"":>19}\n'
-    output += f' Largest Winner Trade .......:{"":>38}{largest_short_profit_trade:>8.2f}{"":>20}{largest_long_profit_trade:>8.2f}{"":>20}{largest_short_profit_trade if largest_short_profit_trade > largest_long_profit_trade else largest_long_profit_trade:>8.2f}\n'
-    output += f' Largest Loser Trade ........:{"":>38}{largest_short_loss_trade:>8.2f}{"":>20}{largest_long_loss_trade:>8.2f}{"":>20}{largest_short_loss_trade if largest_short_loss_trade < largest_long_loss_trade else largest_long_loss_trade:>8.2f}\n'
-    output += f' Most Consecutive Wins ......:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{maximum_consecutive_wins:>8}\n'
-    output += f' Most Consecutive Losses ....:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{maximum_consecutive_losses:>8}\n'
-    output += f' Avg Consecutive Wins .......:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{average_consecutive_wins:>8}\n'
-    output += f' Avg Consecutive Losses .....:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{average_consecutive_losses:>8}\n'
-    output += f' Maximum Drawdown ...........:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{max_drawdown:>8}\n'
+    
+    if error_message:
+        output += f' ERROR DURING SIMULATION .....: {error_message}\n'
+        output += f'\n'
+    else:
+        
+        output += f'{"":>15}MAIN RESULTS\n'
+        output += f'{"-"*50}'
+        output += f'\n'
+        output += f' Initial Balance .............: {initial_balance:>15.2f}\n'
+        output += f' Final Balance ...............: {final_balance:>15.2f}\n'
+        output += f' Net Profit ..................: {net_profit:>15.2f}\n'
+        output += f' Profit (%) ..................: {profit_percentage:>15.2f}\n'
+        output += f'\n'
+        output += f'\n'
+        output += f'{"":>15}TRADE STATISTICS{"":>37}SHORT{"":>23}LONG{"":>22}OVERALL\n'
+        output += f'{"-"*50}{"":>10}{"-"*19}{"":>9}{"-"*19}{"":>9}{"-"*19}{"":>19}\n'
+        output += f' # of Trades Executed .......:{"":>38}{total_short_trades:>8}{"":>20}{total_long_trades:>8}{"":>20}{total_trades:>8}\n'
+        output += f' # of Winners ...............:{"":>38}{total_short_winner_trades:>8}{"":>20}{total_long_winner_trades:>8}{"":>20}{total_winner_trades:>8}\n'
+        output += f' # of Losers ................:{"":>38}{total_short_loser_trades:>8}{"":>20}{total_long_loser_trades:>8}{"":>20}{total_loser_trades:>8}\n'
+        output += f' Gross Profit Trades ........:{"":>38}{gross_profit_short_trades:>8.2f}{"":>20}{gross_profit_long_trades:>8.2f}{"":>20}{gross_profit_total:>8.2f}\n'
+        output += f' Gross Loss Trades ..........:{"":>38}{gross_loss_short_trades:>8.2f}{"":>20}{gross_loss_long_trades:>8.2f}{"":>20}{gross_loss_total:>8.2f}\n'
+        # output += f'\n'
+        # output += f'\n'
+        # output += f'{"":>15}OTHER STATISTICS{"":>37}SHORT{"":>23}LONG{"":>23}OVERALL\n'
+        # output += f'{"-"*50}{"":>10}{"-"*19}{"":>9}{"-"*19}{"":>9}{"-"*19}{"":>19}\n'
+        output += f' Largest Winner Trade .......:{"":>38}{largest_short_profit_trade:>8.2f}{"":>20}{largest_long_profit_trade:>8.2f}{"":>20}{largest_short_profit_trade if largest_short_profit_trade > largest_long_profit_trade else largest_long_profit_trade:>8.2f}\n'
+        output += f' Largest Loser Trade ........:{"":>38}{largest_short_loss_trade:>8.2f}{"":>20}{largest_long_loss_trade:>8.2f}{"":>20}{largest_short_loss_trade if largest_short_loss_trade < largest_long_loss_trade else largest_long_loss_trade:>8.2f}\n'
+        output += f' Most Consecutive Wins ......:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{maximum_consecutive_wins:>8}\n'
+        output += f' Most Consecutive Losses ....:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{maximum_consecutive_losses:>8}\n'
+        output += f' Avg Consecutive Wins .......:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{average_consecutive_wins:>8}\n'
+        output += f' Avg Consecutive Losses .....:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{average_consecutive_losses:>8}\n'
+        output += f' Maximum Drawdown ...........:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{max_drawdown:>8}\n'
     print(output)
 
 

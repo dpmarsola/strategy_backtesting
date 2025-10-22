@@ -17,16 +17,22 @@ def simulate(start_date: str, end_date: str, frequency: str, asset: str, initial
 
     # populate the tables with initial values
     simulation_id = initialize_data.tables_init(start_date, end_date, frequency, asset, initial_balance)
+    error_message = None
 
     # process periods
     periods_range = pd.date_range(start=start_date, end=end_date, freq=frequency)
-
+    
     for current_date in periods_range:
-        process_result = process_cycle.execute(simulation_id, current_date, asset, force_close=False)
+        try:
+            process_result = process_cycle.execute(simulation_id, current_date, asset, force_close=False)
+        except ValueError as ve:
+            error_message = ve
+            break
 
-    check_for_close_on_last_day(simulation_id, asset, periods_range)
+    if not error_message:
+        check_for_close_on_last_day(simulation_id, asset, periods_range)
         
-    report.totalizations(simulation_id, periods_range)
+    report.totalizations(simulation_id, periods_range, error_message)
     
     print(f'Simulation completed!')
     
