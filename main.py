@@ -31,6 +31,7 @@ initial_balance = 10000.00
 exposable_percentage = "100"
 lot_size = 100
 prices_based_on = "close"
+close_on_last_day = True
 
 sim.register_strategy(Strategy())
-sim.simulate(start_date, end_date, frequency, asset, initial_balance, exposable_percentage=exposable_percentage, lot_size=lot_size, prices_based_on=prices_based_on)
+sim.simulate(start_date, end_date, frequency, asset, initial_balance, exposable_percentage=exposable_percentage, lot_size=lot_size, prices_based_on=prices_based_on, close_on_last_day=close_on_last_day)

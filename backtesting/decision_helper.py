@@ -1,5 +1,5 @@
 from .data import simulation as sim
-from .data import trades as trd
+from .data import trades
 from .data import market_data as mkt
 from . import parms
 from . import memory_store
@@ -17,27 +17,15 @@ class Decision_Helper():
         
         
         try:
-            trades = trd.select_trades_data_by_simulation_id(simulation_id)
+            trade = trades.select_trades_open_by_simulation_id(simulation_id)
             
-            if len(trades) == 0:
+            if trade == None:
                 trade = {
-                    "trade_open_date" : 0,
-                    "simulation_id" : '',
-                    "asset_under_simulation" : '',
-                    "position_type" : '',
-                    "position_amount" : 0,
-                    "position_quantity" : 0,
-                    "trade_close_date" : '',
-                    "trade_close_amount" : 0,
-                    "profit_amount" : 0,
-                    "profit_percentage" : 0,
                     "positioned" : False
                 }
             else:
-                for trade in trades:
-                    if trade['trade_close_amount'] == 0:
-                        trade['positioned'] = True
-                        break
+                if trade['trade_close_date'] == 0:
+                    trade['positioned'] = True
         except Exception as e:
             trade['positioned'] = False
 

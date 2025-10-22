@@ -6,6 +6,7 @@ from . import report
 from . import memory_store
 from . import constants
 from . import parms
+from .data import trades
 
 initialize_data.database_init()
 mstore = memory_store.MermoryStore()
@@ -21,7 +22,9 @@ def simulate(start_date: str, end_date: str, frequency: str, asset: str, initial
     periods_range = pd.date_range(start=start_date, end=end_date, freq=frequency)
 
     for current_date in periods_range:
-        process_cycle.execute(simulation_id, current_date, asset)
+        process_result = process_cycle.execute(simulation_id, current_date, asset, force_close=False)
+
+    check_for_close_on_last_day(simulation_id, asset, periods_range)
         
     report.totalizations(simulation_id, periods_range)
     
@@ -58,4 +61,22 @@ def handle_kwargs(kwargs):
             mstore.save(constants.PRICES_BASED_ON, kwargs[constants.PRICES_BASED_ON])
     except KeyError as ke:
             mstore.save(constants.PRICES_BASED_ON, parms.DEFAULT_PRICES_BASED_ON)
-
+        
+    try:
+        if kwargs[constants.CLOSE_ON_LAST_DAY]:
+            mstore.save(constants.CLOSE_ON_LAST_DAY, kwargs[constants.CLOSE_ON_LAST_DAY])
+    except KeyError as ke:
+            mstore.save(constants.CLOSE_ON_LAST_DAY, parms.DEFAULT_CLOSE_ON_LAST_DAY)
+            
+def check_for_close_on_last_day(simulation_id, asset, periods_range):
+    
+        # If this is true, we have an open trade    
+        if mstore.get(constants.CLOSE_ON_LAST_DAY):
+            for period in reversed(periods_range):
+                result = process_cycle.execute(simulation_id, period, asset, force_close=True)
+                if result == 0:
+                    break
+                
+        
+        # # if we got this, it means the last day was a non trading day, so we might have an open    
+        # if process_result == 1:

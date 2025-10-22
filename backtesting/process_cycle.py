@@ -10,7 +10,7 @@ dhelper = dh.Decision_Helper()
 operate = op.Operate()
 mstore = memory_store.MermoryStore()
 
-def execute(simulation_id, current_date, asset):
+def execute(simulation_id, current_date, asset, force_close=False):
     
     market_price = dhelper.get_asset_current_market_price(asset, current_date)
     prices_based_on = mstore.get(constants.PRICES_BASED_ON)
@@ -28,18 +28,27 @@ def execute(simulation_id, current_date, asset):
         asset_current_market_price = market_price['close']
         
     if asset_current_market_price != None:
-        count_trading_days()
         trade = dhelper.check_trade_status(simulation_id)
         strategy = memory_store.MermoryStore().get("strategy")
         
-        if trade["positioned"] == True:
-            decision = strategy.signal_out(current_date)
-            if decision == constants.GET_OUT:
+        if trade["positioned"] == True:            
+            if force_close == True:
                 operate.close_position(simulation_id, current_date, trade, asset, asset_current_market_price)
+                return 0
+            else:
+                decision = strategy.signal_out(current_date)
+                if decision == constants.GET_OUT:
+                    operate.close_position(simulation_id, current_date, trade, asset, asset_current_market_price)
         else:
             decision, position_type = strategy.signal_in(current_date)
             if decision == constants.GET_IN:
                 operate.open_position(simulation_id, current_date, asset, asset_current_market_price, position_type)
+                
+        count_trading_days()
+        
+        return 0
+    else:
+        return 1
                 
 def count_trading_days():
     
