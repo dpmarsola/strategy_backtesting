@@ -10,34 +10,44 @@ from .data import trades
 
 initialize_data.database_init()
 mstore = memory_store.MermoryStore()
-final_report = report.Report()
 
 def simulate(start_date: str, end_date: str, frequency: str, asset: str, initial_balance: int, **kwargs):
 
+    # Handle keywords arguments from input
     handle_kwargs(kwargs)    
 
     # populate the tables with initial values
     simulation_id = initialize_data.tables_init(start_date, end_date, frequency, asset, initial_balance)
-    error_message = None
 
     # process periods
     periods_range = pd.date_range(start=start_date, end=end_date, freq=frequency)
+    error_message = None
     
     for current_date in periods_range:
         try:
-            process_result = process_cycle.execute(simulation_id, current_date, asset, force_close=False)
+            process_cycle.execute(simulation_id, current_date, asset, force_close=False)
         except ValueError as ve:
             error_message = ve
             break
 
+    # Check if there is need to close on last day
     if not error_message:
         check_for_close_on_last_day(simulation_id, asset, periods_range)
+
+    # Generate final report
+    generate_report(simulation_id, periods_range, error_message)
+
+
+# Self Functions 
+def generate_report(simulation_id, periods_range, error_message):
+    
+    final_report = report.Report(simulation_id, periods_range, error_message)
+    
+    if mstore.get(constants.OUTPUT_FILE):
+        final_report.send_to_csv()
+    else:
+        final_report.send_to_stdout()
         
-    final_report.send_to_stdout(simulation_id, periods_range, error_message)
-    final_report.send_to_csv()
-    
-    print(f'Simulation completed!')
-    
 def register_strategy(strategy: object):
     
     if "type" in repr(type(strategy)):
@@ -80,7 +90,7 @@ def handle_kwargs(kwargs):
         if kwargs[constants.OUTPUT_FILE]:
             mstore.save(constants.OUTPUT_FILE, kwargs[constants.OUTPUT_FILE])
     except KeyError as ke:
-            mstore.save(constants.OUTPUT_FILE, parms.DEFAULT_OUTPUT_FILE)
+            pass
             
 def check_for_close_on_last_day(simulation_id, asset, periods_range):
     

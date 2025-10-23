@@ -9,38 +9,6 @@ import pandas as pd
 mstore = memory_store.MermoryStore()
 class Report():
 
-    # initializing variables for the totals 
-    total_short_trades = 0
-    total_long_trades = 0
-    total_short_winner_trades = 0
-    total_long_winner_trades = 0
-    total_short_loser_trades = 0
-    total_long_loser_trades = 0
-    largest_short_profit_trade = 0
-    largest_long_profit_trade = 0
-    largest_short_loss_trade = 0
-    largest_long_loss_trade = 0
-    consecutive_wins = 0
-    consecutive_losses = 0
-    maximum_consecutive_wins = 0
-    maximum_consecutive_losses = 0
-    average_consecutive_wins = 0
-    average_consecutive_losses = 0
-    initial_balance = 0
-    final_balance = 0
-    net_profit = 0
-    profit_percentage = 0
-    total_trades = 0
-    total_winner_trades = 0
-    total_loser_trades = 0
-
-    # auxiliary varibales for calculations    
-    previous_result = ""
-    current_result = ""
-    aux = 0
-    list_consecutive_wins = []
-    list_consecutive_losses = []
-    
     # Header section    
     asset = ""
     period_range = ""
@@ -49,54 +17,80 @@ class Report():
     exposable_percentage = ""
     lot_size = ""
     number_of_testing_days = 0
+    
+    # Balance and Profit Margin
+    initial_balance = 0
+    final_balance = 0
+    net_profit = 0
+    profit_percentage = 0
+    
+    # Totals
+    total_short_trades = 0
+    total_long_trades = 0
+    total_trades = 0
+    total_short_winner_trades = 0
+    total_long_winner_trades = 0
+    total_winner_trades = 0
+    total_short_loser_trades = 0
+    total_long_loser_trades = 0
+    total_loser_trades = 0
 
+    # Gross Profits and Losses
     gross_profit_short_trades = 0
     gross_profit_long_trades = 0
     gross_profit_total = 0
     gross_loss_short_trades = 0
     gross_loss_long_trades = 0
     gross_loss_total = 0
-        
-    def send_to_stdout(self, simulation_id: str, period: str, error_message: str):
+    
+    # Largest Profits and Losses
+    largest_short_profit_trade = 0
+    largest_long_profit_trade = 0
+    largest_overall_profit_trade = 0
+    largest_short_loss_trade = 0
+    largest_long_loss_trade = 0
+    largest_overall_loss_trade = 0
+    
+    # Miscellanea 
+    consecutive_wins = 0
+    consecutive_losses = 0
+    maximum_consecutive_wins = 0
+    maximum_consecutive_losses = 0
+    average_consecutive_wins = 0
+    average_consecutive_losses = 0
+    
+
+    # Auxiliary varibales for calculations    
+    previous_result = ""
+    current_result = ""
+    aux = 0
+    list_consecutive_wins = []
+    list_consecutive_losses = []
+    
+    #Drawdown
+    max_drawdown = 0
+    
+    def __init__(self, simulation_id: str, period: str, error_message: str):
         
         # getting the data need from the tables
-        simulation_data = simulation.select_simulation_data_by_id(simulation_id)
-        trades_data = trades.select_trades_data_by_simulation_id(simulation_id)
-        
-        if len(trades_data) == 0:
-            error_message = f'No data available for {simulation_data["asset_under_simulation"]}'
-            
+        self.simulation_data = simulation.select_simulation_data_by_id(simulation_id)
+        self.trades_data = trades.select_trades_data_by_simulation_id(simulation_id)
+        self.error_message = error_message
+                
         # Header section    
-        self.asset = simulation_data['asset_under_simulation']
-        self.period_range = f"From: {simulation_data['cycle_start']} To: {simulation_data['cycle_end']}"
-        self.frequency = f"{constants.FREQUENCY[simulation_data['frequency']]}"
+        self.asset = self.simulation_data['asset_under_simulation']
+        self.period_range = f"From: {self.simulation_data['cycle_start']} To: {self.simulation_data['cycle_end']}"
+        self.frequency = f"{constants.FREQUENCY[self.simulation_data['frequency']]}"
         self.model = f"Orders are sent on market data with the value based on the {mstore.get(constants.PRICES_BASED_ON).upper()} price"
         self.exposable_percentage = f"Exposing a maximum of {mstore.get(constants.EXPOSABLE_PERCENTAGE)}% of the available (current) balance on each trade"
         self.lot_size = f'{mstore.get(constants.LOT_SIZE)} shares/lot'    
         self.number_of_testing_days = mstore.get("counter_testing_days")
 
+        if len(self.trades_data) == 0:
+            self.error_message = f'No data available for {self.simulation_data["asset_under_simulation"]}'
         
-        output = f'\n'
-        output += f'{"-"*161}\n'
-        output += f'{"-"*60} STRATEGY BACKTESTING - EXECUTION REPORT {"-"*60}\n'
-        output += f'{"-"*161}\n'
-        output += f'\n'
-        output += f' Asset Under Simulation ......: {self.asset}\n'
-        output += f' Period ......................: {self.period_range}\n'
-        output += f' Frequency ...................: {self.frequency}\n'
-        output += f' Model .......................: {self.model}\n'
-        output += f' Capital Exposed (%) .........: {self.exposable_percentage}\n'
-        output += f' Lot Size ....................: {self.lot_size}\n'
-        output += f' # of trading days analyzed ..: {self.number_of_testing_days}\n'
-        output += f'\n'
-        output += f'\n'
-        
-        if error_message:
-            output += f' ERROR DURING SIMULATION .....: {error_message}\n'
-            output += f'\n'
-        else:
-
-            for trade in trades_data:
+        if not self.error_message:
+            for trade in self.trades_data:
                 self.aux += 1
                 
                 if trade['position_type'] == constants.SHORT:
@@ -143,7 +137,7 @@ class Report():
                 
                 # test if this is the last item in the list. if so, there will be no change in result but 
                 # we still have to test for the consecutive wins os losses
-                if self.aux == len(trades_data):
+                if self.aux == len(self.trades_data):
                     if current_result == constants.WIN and self.consecutive_wins > 1:
                         self.list_consecutive_wins.append(self.consecutive_wins)
                         if self.consecutive_wins > self.maximum_consecutive_wins:
@@ -153,7 +147,10 @@ class Report():
                         self.list_consecutive_losses.append(self.consecutive_losses)
                         if self.consecutive_losses > self.maximum_consecutive_losses:
                             self.maximum_consecutive_losses = self.consecutive_losses
-                    
+
+            self.largest_overall_profit_trade = self.largest_short_profit_trade if self.largest_short_profit_trade > self.largest_long_profit_trade else self.largest_long_profit_trade
+            self.largest_overall_loss_trade = self.largest_short_loss_trade if self.largest_short_loss_trade < self.largest_long_loss_trade else self.largest_long_loss_trade
+            
             df = pd.DataFrame(self.list_consecutive_wins)
             mean = df.mean().to_dict().get(0)
             self.average_consecutive_wins = mean if mean != None else 0.0
@@ -163,8 +160,8 @@ class Report():
             self.average_consecutive_losses = mean if mean != None else 0.0
 
             #General View
-            self.initial_balance = simulation_data['initial_balance']
-            self.final_balance = simulation_data['current_balance']
+            self.initial_balance = self.simulation_data['initial_balance']
+            self.final_balance = self.simulation_data['current_balance']
             self.total_trades = self.total_short_trades + self.total_long_trades
             self.total_winner_trades = self.total_short_winner_trades + self.total_long_winner_trades
             self.total_loser_trades = self.total_short_loser_trades + self.total_long_loser_trades
@@ -185,15 +182,40 @@ class Report():
             prices = market_data.select_all_market_data_by_period(self.asset, period[0], period[-1])
             
             peak = prices[0]['high']
-            max_drawdown = 0
 
             for p in prices:
                 peak = max(peak, p['high'])
                 drawdown = (p['low'] - peak) / peak
-                max_drawdown = min(max_drawdown, drawdown)
+                self.max_drawdown = min(self.max_drawdown, drawdown)
 
-            max_drawdown = round(max_drawdown, 2)
+            self.max_drawdown = round(self.max_drawdown, 2)
             
+
+        
+    def send_to_stdout(self):
+        
+
+
+        
+        output = f'\n'
+        output += f'{"-"*161}\n'
+        output += f'{"-"*60} STRATEGY BACKTESTING - EXECUTION REPORT {"-"*60}\n'
+        output += f'{"-"*161}\n'
+        output += f'\n'
+        output += f' Asset Under Simulation ......: {self.asset}\n'
+        output += f' Period ......................: {self.period_range}\n'
+        output += f' Frequency ...................: {self.frequency}\n'
+        output += f' Model .......................: {self.model}\n'
+        output += f' Capital Exposed (%) .........: {self.exposable_percentage}\n'
+        output += f' Lot Size ....................: {self.lot_size}\n'
+        output += f' # of trading days analyzed ..: {self.number_of_testing_days}\n'
+        output += f'\n'
+        output += f'\n'
+        
+        if self.error_message:
+            output += f' ERROR DURING SIMULATION .....: {self.error_message}\n'
+            output += f'\n'
+        else:                    
             output += f'{"":>15}MAIN RESULTS\n'
             output += f'{"-"*50}'
             output += f'\n'
@@ -214,20 +236,61 @@ class Report():
             # output += f'\n'
             # output += f'{"":>15}OTHER STATISTICS{"":>37}SHORT{"":>23}LONG{"":>23}OVERALL\n'
             # output += f'{"-"*50}{"":>10}{"-"*19}{"":>9}{"-"*19}{"":>9}{"-"*19}{"":>19}\n'
-            output += f' Largest Winner Trade .......:{"":>38}{self.largest_short_profit_trade:>8.2f}{"":>20}{self.largest_long_profit_trade:>8.2f}{"":>20}{self.largest_short_profit_trade if self.largest_short_profit_trade > self.largest_long_profit_trade else self.largest_long_profit_trade:>8.2f}\n'
-            output += f' Largest Loser Trade ........:{"":>38}{self.largest_short_loss_trade:>8.2f}{"":>20}{self.largest_long_loss_trade:>8.2f}{"":>20}{self.largest_short_loss_trade if self.largest_short_loss_trade < self.largest_long_loss_trade else self.largest_long_loss_trade:>8.2f}\n'
+            output += f' Largest Winner Trade .......:{"":>38}{self.largest_short_profit_trade:>8.2f}{"":>20}{self.largest_long_profit_trade:>8.2f}{"":>20}{self.largest_overall_profit_trade:>8.2f}\n'
+            output += f' Largest Loser Trade ........:{"":>38}{self.largest_short_loss_trade:>8.2f}{"":>20}{self.largest_long_loss_trade:>8.2f}{"":>20}{self.largest_overall_loss_trade:>8.2f}\n'
             output += f' Most Consecutive Wins ......:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{self.maximum_consecutive_wins:>8}\n'
             output += f' Most Consecutive Losses ....:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{self.maximum_consecutive_losses:>8}\n'
             output += f' Avg Consecutive Wins .......:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{self.average_consecutive_wins:>8.2f}\n'
             output += f' Avg Consecutive Losses .....:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{self.average_consecutive_losses:>8.2f}\n'
-            output += f' Maximum Drawdown ...........:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{max_drawdown:>8.2f}\n'
+            output += f' Maximum Drawdown ...........:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{self.max_drawdown:>8.2f}\n'
         print(output)
 
     def send_to_csv(self):
         
-        output_file = mstore.get(constants.OUTPUT_FILE)
-        with open(output_file, "w") as f:
-            output = 'asset,'
             
-            f.write(output)
-        
+        data = {
+            "total_short_trades": self.total_short_trades,
+            "total_long_trades": self.total_long_trades,
+            "total_short_winner_trades": self.total_short_winner_trades,
+            "total_long_winner_trades": self.total_long_winner_trades,
+            "total_short_loser_trades": self.total_short_loser_trades,
+            "total_long_loser_trades": self.total_long_loser_trades,
+            "largest_short_profit_trade": self.largest_short_profit_trade,
+            "largest_long_profit_trade": self.largest_long_profit_trade,
+            "largest_short_loss_trade": self.largest_short_loss_trade,
+            "largest_long_loss_trade": self.largest_long_loss_trade,
+            "consecutive_wins": self.consecutive_wins,
+            "consecutive_losses": self.consecutive_losses,
+            "maximum_consecutive_wins": self.maximum_consecutive_wins,
+            "maximum_consecutive_losses": self.maximum_consecutive_losses,
+            "average_consecutive_wins": self.average_consecutive_wins,
+            "average_consecutive_losses": self.average_consecutive_losses,
+            "initial_balance": self.initial_balance,
+            "final_balance": self.final_balance,
+            "net_profit": self.net_profit,
+            "profit_percentage": self.profit_percentage,
+            "total_trades": self.total_trades,
+            "total_winner_trades": self.total_winner_trades,
+            "total_loser_trades": self.total_loser_trades,
+            "asset": self.asset,
+            "period_range": self.period_range,
+            "frequency": self.frequency,
+            "model": self.model,
+            "exposable_percentage": self.exposable_percentage,
+            "lot_size": self.lot_size,
+            "number_of_testing_days": self.number_of_testing_days,
+            "gross_profit_short_trades": self.gross_profit_short_trades,
+            "gross_profit_long_trades": self.gross_profit_long_trades,
+            "gross_profit_total": self.gross_profit_total,
+            "gross_loss_short_trades": self.gross_loss_short_trades,
+            "gross_loss_long_trades": self.gross_loss_long_trades,
+            "gross_loss_total": self.gross_loss_total,
+        }
+
+        # Convert to DataFrame
+        df = pd.DataFrame([data])
+
+        # Save to CSV
+        df.to_csv(mstore.get(constants.OUTPUT_FILE), index=False)
+
+        print("✅ Saved trading stats to trading_stats.csv")        
