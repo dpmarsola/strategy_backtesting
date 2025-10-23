@@ -26,7 +26,7 @@ df['asset'] = ticker
 
 # engine = create_engine('sqlite:///robotrader.db')
 conn = connection.get_connection()
-df.to_sql(name="market_data", con=conn, if_exists='replace', index=False)
+df.to_sql(name="market_data", con=conn, if_exists='append', index=False)
 
 conn = connection.get_connection()
 

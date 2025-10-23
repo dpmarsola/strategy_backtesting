@@ -10,6 +10,7 @@ from .data import trades
 
 initialize_data.database_init()
 mstore = memory_store.MermoryStore()
+final_report = report.Report()
 
 def simulate(start_date: str, end_date: str, frequency: str, asset: str, initial_balance: int, **kwargs):
 
@@ -32,7 +33,8 @@ def simulate(start_date: str, end_date: str, frequency: str, asset: str, initial
     if not error_message:
         check_for_close_on_last_day(simulation_id, asset, periods_range)
         
-    report.totalizations(simulation_id, periods_range, error_message)
+    final_report.send_to_stdout(simulation_id, periods_range, error_message)
+    final_report.send_to_csv()
     
     print(f'Simulation completed!')
     
@@ -73,6 +75,12 @@ def handle_kwargs(kwargs):
             mstore.save(constants.CLOSE_ON_LAST_DAY, kwargs[constants.CLOSE_ON_LAST_DAY])
     except KeyError as ke:
             mstore.save(constants.CLOSE_ON_LAST_DAY, parms.DEFAULT_CLOSE_ON_LAST_DAY)
+            
+    try:
+        if kwargs[constants.OUTPUT_FILE]:
+            mstore.save(constants.OUTPUT_FILE, kwargs[constants.OUTPUT_FILE])
+    except KeyError as ke:
+            mstore.save(constants.OUTPUT_FILE, parms.DEFAULT_OUTPUT_FILE)
             
 def check_for_close_on_last_day(simulation_id, asset, periods_range):
     

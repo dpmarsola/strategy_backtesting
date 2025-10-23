@@ -9,6 +9,8 @@ LOT_SIZE = "lot_size"
 PRICES_BASED_ON = "prices_based_on"
 CLOSE_ON_LAST_DAY = "close_on_last_day"
 
+OUTPUT_FILE = "output_file"
+
 GET_IN = "get_in"
 GET_OUT = "get_out"
 STAY = "stay"
