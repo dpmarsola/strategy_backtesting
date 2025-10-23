@@ -9,12 +9,14 @@ import pandas as pd
 mstore = memory_store.MermoryStore()
 class Report():
 
-    # Header section    
+    # Header section  
+    simulation_id = ""  
     asset = ""
-    period_range = ""
+    period_from = ""
+    period_to = ""
     frequency = ""
-    model = ""
-    exposable_percentage = ""
+    prices_based_on = ""
+    text_exposable_cpt = ""
     lot_size = ""
     number_of_testing_days = 0
     
@@ -59,6 +61,8 @@ class Report():
     average_consecutive_wins = 0
     average_consecutive_losses = 0
     
+    #Drawdown
+    max_drawdown = 0
 
     # Auxiliary varibales for calculations    
     previous_result = ""
@@ -67,8 +71,6 @@ class Report():
     list_consecutive_wins = []
     list_consecutive_losses = []
     
-    #Drawdown
-    max_drawdown = 0
     
     def __init__(self, simulation_id: str, period: str, error_message: str):
         
@@ -78,12 +80,14 @@ class Report():
         self.error_message = error_message
                 
         # Header section    
+        self.simulation_id = self.simulation_data['simulation_id']
         self.asset = self.simulation_data['asset_under_simulation']
-        self.period_range = f"From: {self.simulation_data['cycle_start']} To: {self.simulation_data['cycle_end']}"
-        self.frequency = f"{constants.FREQUENCY[self.simulation_data['frequency']]}"
-        self.model = f"Orders are sent on market data with the value based on the {mstore.get(constants.PRICES_BASED_ON).upper()} price"
-        self.exposable_percentage = f"Exposing a maximum of {mstore.get(constants.EXPOSABLE_PERCENTAGE)}% of the available (current) balance on each trade"
-        self.lot_size = f'{mstore.get(constants.LOT_SIZE)} shares/lot'    
+        self.period_from = self.simulation_data['cycle_start']
+        self.period_to = self.simulation_data['cycle_end']
+        self.frequency = self.simulation_data['frequency']
+        self.prices_based_on = mstore.get(constants.PRICES_BASED_ON).upper()
+        self.text_exposable_cpt = mstore.get(constants.EXPOSABLE_PERCENTAGE)
+        self.lot_size = mstore.get(constants.LOT_SIZE)
         self.number_of_testing_days = mstore.get("counter_testing_days")
 
         if len(self.trades_data) == 0:
@@ -195,19 +199,24 @@ class Report():
     def send_to_stdout(self):
         
 
-
+        # Header section
+        self.text_period = f"From: {self.simulation_data['cycle_start']} To: {self.simulation_data['cycle_end']}"
+        self.text_model = f"Orders are sent on market data with the value based on the {mstore.get(constants.PRICES_BASED_ON).upper()} price"
+        self.text_exposable_cpt = f"Exposing a maximum of {mstore.get(constants.EXPOSABLE_PERCENTAGE)}% of the available (current) balance on each trade"
+        self.text_frequency =  f"{constants.FREQUENCY[self.frequency]}"
         
         output = f'\n'
         output += f'{"-"*161}\n'
         output += f'{"-"*60} STRATEGY BACKTESTING - EXECUTION REPORT {"-"*60}\n'
         output += f'{"-"*161}\n'
         output += f'\n'
+        output += f' Simulation ID ...............: {self.simulation_id}\n'
         output += f' Asset Under Simulation ......: {self.asset}\n'
-        output += f' Period ......................: {self.period_range}\n'
-        output += f' Frequency ...................: {self.frequency}\n'
-        output += f' Model .......................: {self.model}\n'
-        output += f' Capital Exposed (%) .........: {self.exposable_percentage}\n'
-        output += f' Lot Size ....................: {self.lot_size}\n'
+        output += f' Period ......................: {self.text_period}\n'
+        output += f' Frequency ...................: {self.text_frequency}\n'
+        output += f' Model .......................: {self.text_model}\n'
+        output += f' Capital Exposed (%) .........: {self.text_exposable_cpt}\n'
+        output += f' Lot Size ....................: {self.lot_size} shares/lot\n'
         output += f' # of trading days analyzed ..: {self.number_of_testing_days}\n'
         output += f'\n'
         output += f'\n'
@@ -246,47 +255,64 @@ class Report():
         print(output)
 
     def send_to_csv(self):
-        
-            
+                
         data = {
-            "total_short_trades": self.total_short_trades,
-            "total_long_trades": self.total_long_trades,
-            "total_short_winner_trades": self.total_short_winner_trades,
-            "total_long_winner_trades": self.total_long_winner_trades,
-            "total_short_loser_trades": self.total_short_loser_trades,
-            "total_long_loser_trades": self.total_long_loser_trades,
-            "largest_short_profit_trade": self.largest_short_profit_trade,
-            "largest_long_profit_trade": self.largest_long_profit_trade,
-            "largest_short_loss_trade": self.largest_short_loss_trade,
-            "largest_long_loss_trade": self.largest_long_loss_trade,
-            "consecutive_wins": self.consecutive_wins,
-            "consecutive_losses": self.consecutive_losses,
-            "maximum_consecutive_wins": self.maximum_consecutive_wins,
-            "maximum_consecutive_losses": self.maximum_consecutive_losses,
-            "average_consecutive_wins": self.average_consecutive_wins,
-            "average_consecutive_losses": self.average_consecutive_losses,
+            # Header section    
+            "simulationa_id": self.simulation_id,
+            "asset": self.asset,
+            "period_from": self.period_from,
+            "period_to": self.period_to,
+            "frequency": self.frequency,
+            "prices_based_on": self.prices_based_on,
+            "text_exposable_cpt": self.text_exposable_cpt,
+            "lot_size": self.lot_size,
+            "number_of_testing_days": self.number_of_testing_days,
+            
+            # Balance and Profit Margin
             "initial_balance": self.initial_balance,
             "final_balance": self.final_balance,
             "net_profit": self.net_profit,
             "profit_percentage": self.profit_percentage,
+            
+            # Totals
+            "total_short_trades": self.total_short_trades,
+            "total_long_trades": self.total_long_trades,
             "total_trades": self.total_trades,
+            "total_short_winner_trades": self.total_short_winner_trades,
+            "total_long_winner_trades": self.total_long_winner_trades,
             "total_winner_trades": self.total_winner_trades,
+            "total_short_loser_trades": self.total_short_loser_trades,
+            "total_long_loser_trades": self.total_long_loser_trades,
             "total_loser_trades": self.total_loser_trades,
-            "asset": self.asset,
-            "period_range": self.period_range,
-            "frequency": self.frequency,
-            "model": self.model,
-            "exposable_percentage": self.exposable_percentage,
-            "lot_size": self.lot_size,
-            "number_of_testing_days": self.number_of_testing_days,
+            
+            # Gross Profits and Losses
             "gross_profit_short_trades": self.gross_profit_short_trades,
             "gross_profit_long_trades": self.gross_profit_long_trades,
             "gross_profit_total": self.gross_profit_total,
             "gross_loss_short_trades": self.gross_loss_short_trades,
             "gross_loss_long_trades": self.gross_loss_long_trades,
             "gross_loss_total": self.gross_loss_total,
+            
+            # Largest Profits and Losses
+            "largest_short_profit_trade": self.largest_short_profit_trade,
+            "largest_long_profit_trade": self.largest_long_profit_trade,
+            "largest_overall_profit_trade": self.largest_overall_profit_trade,
+            "largest_short_loss_trade": self.largest_short_loss_trade,
+            "largest_long_loss_trade": self.largest_long_loss_trade,
+            "largest_overall_loss_trade": self.largest_overall_loss_trade,
+            
+            # Miscellanea 
+            "consecutive_wins": self.consecutive_wins,
+            "consecutive_losses": self.consecutive_losses,
+            "maximum_consecutive_wins": self.maximum_consecutive_wins,
+            "maximum_consecutive_losses": self.maximum_consecutive_losses,
+            "average_consecutive_wins": self.average_consecutive_wins,
+            "average_consecutive_losses": self.average_consecutive_losses,
+            
+            # Drawdown
+            "max_drawdown": self.max_drawdown,
         }
-
+        
         # Convert to DataFrame
         df = pd.DataFrame([data])
 

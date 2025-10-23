@@ -55,7 +55,7 @@ class Strategy():
     
 
 start_date = '2025-08-01'
-end_date = '2025-08-10'
+end_date = '2025-08-11'
 frequency = 'D'
 asset = "ITSA4"
 initial_balance = 10000.00
@@ -63,7 +63,7 @@ exposable_percentage = "100"
 lot_size = 100
 prices_based_on = "open"
 close_on_last_day = True
-output_file = 'simu.csv'
+output_file = 'simulation.csv'
 
 sim.register_strategy(Strategy())
-sim.simulate(start_date, end_date, frequency, asset, initial_balance, exposable_percentage=exposable_percentage, lot_size=lot_size, prices_based_on=prices_based_on, close_on_last_day=close_on_last_day, output_file=None)
+sim.simulate(start_date, end_date, frequency, asset, initial_balance, exposable_percentage=exposable_percentage, lot_size=lot_size, prices_based_on=prices_based_on, close_on_last_day=close_on_last_day, output_file=output_file)
