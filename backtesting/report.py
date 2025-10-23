@@ -16,7 +16,8 @@ class Report():
     period_to = ""
     frequency = ""
     prices_based_on = ""
-    text_exposable_cpt = ""
+    strategy_description = ""
+    exposable_cpt = ""
     lot_size = ""
     number_of_testing_days = 0
     
@@ -86,7 +87,8 @@ class Report():
         self.period_to = self.simulation_data['cycle_end']
         self.frequency = self.simulation_data['frequency']
         self.prices_based_on = mstore.get(constants.PRICES_BASED_ON).upper()
-        self.text_exposable_cpt = mstore.get(constants.EXPOSABLE_PERCENTAGE)
+        self.strategy_description = mstore.get("strategy").description
+        self.exposable_cpt = mstore.get(constants.EXPOSABLE_PERCENTAGE)
         self.lot_size = mstore.get(constants.LOT_SIZE)
         self.number_of_testing_days = mstore.get("counter_testing_days")
 
@@ -201,8 +203,8 @@ class Report():
 
         # Header section
         self.text_period = f"From: {self.simulation_data['cycle_start']} To: {self.simulation_data['cycle_end']}"
-        self.text_model = f"Orders are sent on market data with the value based on the {mstore.get(constants.PRICES_BASED_ON).upper()} price"
-        self.text_exposable_cpt = f"Exposing a maximum of {mstore.get(constants.EXPOSABLE_PERCENTAGE)}% of the available (current) balance on each trade"
+        self.text_price_considered = f"Positions are opened and closed based on the {self.prices_based_on.upper()} price"
+        self.text_exposable_cpt = f"Exposing a maximum of {self.exposable_cpt} % of the available (current) balance on each trade"
         self.text_frequency =  f"{constants.FREQUENCY[self.frequency]}"
         
         output = f'\n'
@@ -214,7 +216,8 @@ class Report():
         output += f' Asset Under Simulation ......: {self.asset}\n'
         output += f' Period ......................: {self.text_period}\n'
         output += f' Frequency ...................: {self.text_frequency}\n'
-        output += f' Model .......................: {self.text_model}\n'
+        output += f' Price Considered ............: {self.text_price_considered}\n'
+        output += f' Strategy Description ........: {self.strategy_description}\n'
         output += f' Capital Exposed (%) .........: {self.text_exposable_cpt}\n'
         output += f' Lot Size ....................: {self.lot_size} shares/lot\n'
         output += f' # of trading days analyzed ..: {self.number_of_testing_days}\n'
@@ -264,7 +267,7 @@ class Report():
             "period_to": self.period_to,
             "frequency": self.frequency,
             "prices_based_on": self.prices_based_on,
-            "text_exposable_cpt": self.text_exposable_cpt,
+            "text_exposable_cpt": self.exposable_cpt,
             "lot_size": self.lot_size,
             "number_of_testing_days": self.number_of_testing_days,
             
