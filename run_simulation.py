@@ -17,6 +17,7 @@ parser.add_argument('--exposable-capital', metavar='', type=int, default=100, he
 parser.add_argument('--lot-size', metavar='', type=int, default=100, help='The number of shares in 1 lot for the market being simulated. DEFAULT: %(default)s (shares/lot)')
 parser.add_argument('--prices-based-on',metavar='', default='CLOSE', help='Sets if trades will be based on the OPEN, HIGH, LOW or CLOSE value. DEFAULT:  %(default)s')
 parser.add_argument('--close-on-last-day',metavar='', default=True, type=bool, help='Sets wether positions will be forced to close if the simulation ends with an open position. DEFAULT:  %(default)s')
+parser.add_argument('--strategy-parms', metavar='', nargs='*', help='Pass this values as keyword parameters to the strategy class.')
 parser.add_argument('--output-file', metavar='', help='When set, it will output to a file in csv format. It will override standard output.')
 args = parser.parse_args()
 
@@ -54,8 +55,12 @@ if flag_strgy_found:
         prices_based_on = args.prices_based_on
         close_on_last_day = args.close_on_last_day
         output_file = args.output_file
-
-        sim.register_strategy(strategy())
+        strategy_parms = args.strategy_parms
+        
+        if strategy_parms:
+            sim.register_strategy(strategy(strategy_parms))
+        else:
+            sim.register_strategy(strategy())
         sim.simulate(start_date, end_date, frequency, asset, initial_balance, exposable_percentage=exposable_percentage, lot_size=lot_size, prices_based_on=prices_based_on, close_on_last_day=close_on_last_day, output_file=output_file)
     except ImportError as e:
         print(f"Error loading plugin {plugin_name}: {e}")
