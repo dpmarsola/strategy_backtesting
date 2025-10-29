@@ -1,7 +1,7 @@
 DATABASE_NAME  = "data.db"
 TRADES_TABLE = "trades"
 SIMULATION_TABLE = "simulation"
-MARKET_DATA_TABLE = "market_data"
+MARKET_DATA_TABLE = "historical_data"
 STATE_DATA = "state_data"
 
 EXPOSABLE_PERCENTAGE = "exposable_percentage"

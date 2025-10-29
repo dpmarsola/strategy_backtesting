@@ -6,12 +6,14 @@ from . import report
 from . import memory_store
 from . import constants
 from . import parms
-from .data import trades
 
 initialize_data.database_init()
 mstore = memory_store.MermoryStore()
 
 def simulate(start_date: str, end_date: str, frequency: str, asset: str, initial_balance: int, **kwargs):
+    
+    # Store global values
+    store_global_values(asset)
 
     # Handle keywords arguments from input
     handle_kwargs(kwargs)    
@@ -54,15 +56,24 @@ def generate_report(simulation_id, period, error_message):
     else:
         final_report.send_to_stdout()
         
-def register_strategy(strategy: object):
-    
+def register_strategy(strategy: object, strategy_parms: list):
+
+    if strategy_parms:
+        for parm in strategy_parms:
+            if '=' not in parm:
+                raise ValueError(f'Invalid strategy parm. Should contain a "key=value" pattern. See help for more information.')        
+            parm = parm.split("=")
+            key = parm[0]
+            value = parm[1]
+            mstore.save(key, value)
+            
     if "type" in repr(type(strategy)):
         strategy_obj = strategy()
     else:
         strategy_obj = strategy
 
     if ("signal_in" not in dir(strategy_obj)) or ("signal_out" not in dir(strategy_obj)):
-        raise Exception(f"Strategy does not implement the necessary methods: 'signal_in()' and 'signal_out()'.")
+        raise ValueError(f"Strategy does not implement the necessary methods: 'signal_in()' and 'signal_out()'.")
     
     mstore.save("strategy", strategy_obj)
 
@@ -100,9 +111,12 @@ def handle_kwargs(kwargs):
             
 def check_for_close_on_last_day(simulation_id, asset, period):
     
-        # If this is true, we have an open trade    
-        if mstore.get(constants.CLOSE_ON_LAST_DAY):
-            for date in reversed(period):
-                result = process_cycle.execute(simulation_id, date, asset, force_close=True)
-                if result == 0:
-                    break
+    # If this is true, we have an open trade    
+    if mstore.get(constants.CLOSE_ON_LAST_DAY):
+        for date in reversed(period):
+            result = process_cycle.execute(simulation_id, date, asset, force_close=True)
+            if result == 0:
+                break
+
+def store_global_values(asset):
+    mstore.save('asset', asset)

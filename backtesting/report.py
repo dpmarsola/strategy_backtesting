@@ -96,21 +96,20 @@ class Report():
             self.error_message = f'No data available for {self.simulation_data["asset_under_simulation"]}'
         
         if not self.error_message:
+            previous_result  = ''
             for trade in self.trades_data:
                 self.aux += 1
-                
+
                 if trade['position_type'] == constants.SHORT:
                     self.total_short_trades += 1
                     if trade['profit_amount'] >= 0:
                         self.total_short_winner_trades += 1
                         current_result = constants.WIN
-                        self.consecutive_wins += 1
                         if trade['profit_amount'] > self.largest_short_profit_trade:
                             self.largest_short_profit_trade = trade['profit_amount']
                     else:
                         self.total_short_loser_trades += 1
                         current_result = constants.LOOSE
-                        self.consecutive_losses += 1
                         if trade['profit_amount'] < self.largest_short_loss_trade:
                             self.largest_short_loss_trade = trade['profit_amount']
                 
@@ -119,37 +118,37 @@ class Report():
                     if trade['profit_amount'] >= 0:
                         self.total_long_winner_trades += 1
                         current_result = constants.WIN
-                        self.consecutive_wins += 1
                         if trade['profit_amount'] > self.largest_long_profit_trade:
                             self.largest_long_profit_trade = trade['profit_amount']
                     else:
                         self.total_long_loser_trades += 1
                         current_result = constants.LOOSE
-                        self.consecutive_losses += 1
                         if trade['profit_amount'] < self.largest_long_loss_trade:
                             self.largest_long_loss_trade = trade['profit_amount']
                 
-                if current_result != self.previous_result:
-                    self.previous_result = current_result
-                    if current_result == constants.WIN and self.consecutive_wins > 1:
+                if current_result != previous_result:
+                    if previous_result == constants.WIN and self.consecutive_wins > 1:
                         self.list_consecutive_wins.append(self.consecutive_wins)
-                        if self.consecutive_wins > self.maximum_consecutive_wins:
-                            self.maximum_consecutive_wins = self.consecutive_wins
-                    
-                    if current_result == constants.LOOSE and self.consecutive_losses > 1:
+                    if previous_result == constants.LOOSE and self.consecutive_losses > 1:
                         self.list_consecutive_losses.append(self.consecutive_losses)
-                        if self.consecutive_losses > self.maximum_consecutive_losses:
-                            self.maximum_consecutive_losses = self.consecutive_losses
-                
+                    previous_result = current_result
+                    self.consecutive_wins = 0
+                    self.consecutive_losses = 0
+                else:
+                    if current_result == constants.WIN:
+                        self.consecutive_wins += 1
+                    else:
+                        self.consecutive_losses += 1
+                                                                
                 # test if this is the last item in the list. if so, there will be no change in result but 
                 # we still have to test for the consecutive wins os losses
                 if self.aux == len(self.trades_data):
-                    if current_result == constants.WIN and self.consecutive_wins > 1:
+                    if current_result == constants.WIN:
                         self.list_consecutive_wins.append(self.consecutive_wins)
                         if self.consecutive_wins > self.maximum_consecutive_wins:
                             self.maximum_consecutive_wins = self.consecutive_wins
                     
-                    if current_result == constants.LOOSE and self.consecutive_losses > 1:
+                    if current_result == constants.LOOSE:
                         self.list_consecutive_losses.append(self.consecutive_losses)
                         if self.consecutive_losses > self.maximum_consecutive_losses:
                             self.maximum_consecutive_losses = self.consecutive_losses
@@ -158,12 +157,16 @@ class Report():
             self.largest_overall_loss_trade = self.largest_short_loss_trade if self.largest_short_loss_trade < self.largest_long_loss_trade else self.largest_long_loss_trade
             
             df = pd.DataFrame(self.list_consecutive_wins)
-            mean = df.mean().to_dict().get(0)
-            self.average_consecutive_wins = mean if mean != None else 0.0
+            if df.size > 0:
+                mean = df.mean().to_dict().get(0)
+                self.maximum_consecutive_wins = df.max().to_dict()[0]
+                self.average_consecutive_wins = mean if mean != None else 0.0
             
             df = pd.DataFrame(self.list_consecutive_losses)
-            mean = df.mean().to_dict().get(0)
-            self.average_consecutive_losses = mean if mean != None else 0.0
+            if df.size > 0:
+                mean = df.mean().to_dict().get(0)
+                self.maximum_consecutive_losses = df.max().to_dict()[0]
+                self.average_consecutive_losses = mean if mean != None else 0.0
 
             #General View
             self.initial_balance = self.simulation_data['initial_balance']

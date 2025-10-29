@@ -17,7 +17,7 @@ parser.add_argument('--exposable-capital', metavar='', type=int, default=100, he
 parser.add_argument('--lot-size', metavar='', type=int, default=100, help='The number of shares in 1 lot for the market being simulated. DEFAULT: %(default)s (shares/lot)')
 parser.add_argument('--prices-based-on',metavar='', default='CLOSE', help='Sets if trades will be based on the OPEN, HIGH, LOW or CLOSE value. DEFAULT:  %(default)s')
 parser.add_argument('--close-on-last-day',metavar='', default=True, type=bool, help='Sets wether positions will be forced to close if the simulation ends with an open position. DEFAULT:  %(default)s')
-parser.add_argument('--strategy-parms', metavar='', nargs='*', help='Pass this values as keyword parameters to the strategy class.')
+parser.add_argument('--strategy-parms', metavar='key=value key1=value1', nargs='*', help='Pass this values as keyword parameters to the strategy class.')
 parser.add_argument('--output-file', metavar='', help='When set, it will output to a file in csv format. It will override standard output.')
 args = parser.parse_args()
 
@@ -33,11 +33,26 @@ for item_name in os.listdir(plugins_directory):
         flag_strgy_found = True
         break
         
+if not flag_strgy_found:
+    for item_name in os.listdir(plugins_directory):
+        full_path = os.path.join(plugins_directory, item_name)
+        if os.path.isfile(full_path):
+            with open(full_path, "r") as f:
+                while True:
+                    line = f.readline()
+                    if not line:  # Check for empty string, indicating EOF
+                        break
+                    if args.strategy in line.strip():
+                        flag_strgy_found = True
+                        args.strategy = item_name
+                        args.strategy = args.strategy.replace(".py", "")
+                        break
+    
 if flag_strgy_found:
     full_path = os.path.join(plugins_directory, item_name)
     if os.path.isfile(full_path):
         plugin_name = args.strategy
-        
+
     try:
         plugin_module = import_module(plugin_name)
         for k,v in plugin_module.__dict__.items():
@@ -57,13 +72,20 @@ if flag_strgy_found:
         output_file = args.output_file
         strategy_parms = args.strategy_parms
         
-        if strategy_parms:
-            sim.register_strategy(strategy(strategy_parms))
-        else:
-            sim.register_strategy(strategy())
+        sim.register_strategy(strategy(), strategy_parms)
         sim.simulate(start_date, end_date, frequency, asset, initial_balance, exposable_percentage=exposable_percentage, lot_size=lot_size, prices_based_on=prices_based_on, close_on_last_day=close_on_last_day, output_file=output_file)
     except ImportError as e:
+        print(f'{"-"*160}')
         print(f"Error loading plugin {plugin_name}: {e}")
+        print(f'{"-"*160}')
+        print(f'{" "*160}')
+        print(f'{parser.print_help()}')
+    except ValueError as ve:
+        print(f'{"-"*160}')
+        print(f'Error loading plugin {plugin_name}: {ve}')
+        print(f'{"-"*160}')
+        print(f'{" "*160}')
+        print(f'{parser.print_help()}')
 
 else:
     print(f'\n')

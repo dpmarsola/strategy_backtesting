@@ -14,6 +14,7 @@ end_period = sys.argv[4]
 
 # Define the URL you want to send the GET request to
 url = f'http://localhost:8080/trendsniper/?ticker={ticker}&timeframe={timeframe}&initial_period={initial_period}&end_period={end_period}&options=adr&options=guppy&options=atr&options=macd&options=cbl&options=show-raw-data&options=json'
+# url = f'http://localhost:8080/trendsniper/?ticker={ticker}&timeframe={timeframe}&initial_period={initial_period}&end_period={end_period}&options=json'
 
 # Send the GET request
 response = requests.get(url)
