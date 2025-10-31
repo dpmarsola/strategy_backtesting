@@ -36,14 +36,16 @@ class Operate():
                 
         if position_type == constants.LONG:
             order_type = constants.BUY
+            subtract_it = True
             effective_amount, effective_quantity = self.send_order(order_type, simulation_id, max_quantity_possible, position_type, fitted_amount, asset, asset_current_market_price, current_date)
         else:
             order_type = constants.SELL
+            subtract_it = False
             effective_amount, effective_quantity = self.send_order(order_type, simulation_id, max_quantity_possible, position_type, fitted_amount, asset, asset_current_market_price, current_date)
         
         if effective_amount > 0:
             # debit from simulation's current_position
-            simulation.update_simulation_current_balance(simulation_id, effective_amount, True)
+            simulation.update_simulation_current_balance(simulation_id, effective_amount, subtract_it)
             # add a trade to the trades history
             trades.insert_trades_data(current_date, simulation_id, asset, position_type, effective_amount, effective_quantity, constants.ZERO, constants.ZERO, constants.ZERO, constants.ZERO)
  
@@ -51,17 +53,23 @@ class Operate():
         
         if trade['position_type'] == constants.LONG:
             order_type = constants.SELL
+            subtract_it = False
             effective_amount, effective_quantity = self.send_order(order_type, simulation_id, trade['position_quantity'], trade['position_type'], trade['position_amount'], asset, asset_current_market_price, current_date)
         else:
             order_type = constants.BUY
+            subtract_it = True
             effective_amount, effective_quantity = self.send_order(order_type, simulation_id, trade['position_quantity'], trade['position_type'], trade['position_amount'], asset, asset_current_market_price, current_date)
             
         if effective_amount > 0:
             # credit simulation's current_position
-            simulation.update_simulation_current_balance(simulation_id, effective_amount, False)
+            simulation.update_simulation_current_balance(simulation_id, effective_amount, subtract_it)
             # calculate the profit or loss and update in trades history
             trade_close_date = current_date
             trade_close_amount = effective_amount
-            profit_amount = effective_amount - trade['position_amount']
-            profit_percentage = ((trade_close_amount / trade['position_amount']) - 1) * 100
+            if subtract_it:
+                profit_amount = trade['position_amount'] - trade_close_amount
+                profit_percentage = ((trade['position_amount'] / trade_close_amount) - 1) * 100
+            else:
+                profit_amount = trade_close_amount - trade['position_amount']
+                profit_percentage = ((trade_close_amount / trade['position_amount']) - 1) * 100
             trades.update_account_position_balance(simulation_id, trade['trade_open_date'], trade_close_date, trade_close_amount, profit_amount, profit_percentage)

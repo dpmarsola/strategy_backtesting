@@ -2,9 +2,10 @@ from .data import simulation
 from .data import trades
 from .data import market_data
 from . import constants
-from . import parms
+from . import data_plot
 from . import memory_store
 import pandas as pd
+from datetime import datetime
 
 mstore = memory_store.MermoryStore()
 class Report():
@@ -92,6 +93,9 @@ class Report():
         self.lot_size = mstore.get(constants.LOT_SIZE)
         self.number_of_testing_days = mstore.get("counter_testing_days")
 
+        # getting all the market date used in the simulation to calculate maximum drawdown
+        self.prices = market_data.select_all_market_data_by_period(self.asset, period[0], period[-1])
+        
         if len(self.trades_data) == 0:
             self.error_message = f'No data available for {self.simulation_data["asset_under_simulation"]}'
         
@@ -187,22 +191,44 @@ class Report():
             self.gross_loss_long_trades = trades.select_trades_sum_loss_amount(simulation_id, constants.LONG)
             self.gross_loss_total = self.gross_loss_short_trades + self.gross_loss_long_trades
             
-            # getting all the market date used in the simulation to calculate maximum drawdown
-            prices = market_data.select_all_market_data_by_period(self.asset, period[0], period[-1])
-            
-            peak = prices[0]['high']
+            peak = self.prices[0]['high']
 
-            for p in prices:
+            for p in self.prices:
                 peak = max(peak, p['high'])
                 drawdown = (p['low'] - peak) / peak
                 self.max_drawdown = min(self.max_drawdown, drawdown)
 
             self.max_drawdown = round(self.max_drawdown, 2)
             
+            # Begining of the logic to send data to be plotted by mathplotlib
+            datetimes = []
+            for i in self.prices:
+                datetimes.append(i['datetime'])
+                        
+            self.mplot_market_and_trades_data = pd.DataFrame(self.prices, index=datetimes)
+            self.mplot_market_and_trades_data['trade_open_close_indicator'] = None
+            self.mplot_market_and_trades_data['trade_short_or_long_indicator'] = None
+            self.mplot_market_and_trades_data['trade_open_price'] = None
+            self.mplot_market_and_trades_data['trade_close_price'] = None
 
+            for trade in self.trades_data:
+                format_string = "%d-%m-%Y %H:%M:%S"
+                trade_open_date_ddmmYYYY = datetime.strptime(trade['trade_open_date'], format_string)
+                trade_open_date_YYYYmmdd = trade_open_date_ddmmYYYY.strftime('%Y-%m-%d %H:%M:%S')
+                self.mplot_market_and_trades_data.loc[ trade_open_date_YYYYmmdd, 'trade_open_close_indicator' ] = "open"
+                self.mplot_market_and_trades_data.loc[ trade_open_date_YYYYmmdd, 'trade_short_or_long_indicator' ] = trade['position_type']
+                self.mplot_market_and_trades_data.loc[ trade_open_date_YYYYmmdd, 'trade_open_price' ] = trade['position_amount']/trade['position_quantity']
+                
+                
+                trade_close_date_ddmmYYYY = datetime.strptime(trade['trade_close_date'], format_string)
+                trade_close_date_YYYYmmdd = trade_close_date_ddmmYYYY.strftime('%Y-%m-%d %H:%M:%S')
+                self.mplot_market_and_trades_data.loc[ trade_close_date_YYYYmmdd, 'trade_open_close_indicator' ] = "close"
+                self.mplot_market_and_trades_data.loc[ trade_close_date_YYYYmmdd, 'trade_short_or_long_indicator' ] = trade['position_type']
+                self.mplot_market_and_trades_data.loc[ trade_close_date_YYYYmmdd, 'trade_close_price' ] = trade['trade_close_amount']/trade['position_quantity']
+                
+            self.mplot_market_and_trades_data = self.mplot_market_and_trades_data.set_index('datetime')
         
     def send_to_stdout(self):
-        
 
         # Header section
         self.text_period = f"From: {self.simulation_data['cycle_start']} To: {self.simulation_data['cycle_end']}"
@@ -259,6 +285,11 @@ class Report():
             output += f' Avg Consecutive Losses .....:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{self.average_consecutive_losses:>8.2f}\n'
             output += f' Maximum Drawdown ...........:{"":>38}{"--":>8}{"":>20}{"--":>8}{"":>20}{self.max_drawdown:>8.2f}\n'
         print(output)
+    
+    def plot_chart(self):
+        
+        dplot = data_plot.DataPlot()
+        dplot.execute(self.mplot_market_and_trades_data)
 
     def send_to_csv(self):
                 

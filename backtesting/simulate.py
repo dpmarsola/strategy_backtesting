@@ -11,9 +11,6 @@ initialize_data.database_init()
 mstore = memory_store.MermoryStore()
 
 def simulate(start_date: str, end_date: str, frequency: str, asset: str, initial_balance: int, **kwargs):
-    
-    # Store global values
-    store_global_values(asset)
 
     # Handle keywords arguments from input
     handle_kwargs(kwargs)    
@@ -21,6 +18,10 @@ def simulate(start_date: str, end_date: str, frequency: str, asset: str, initial
     # populate the tables with initial values
     simulation_id = initialize_data.tables_init(start_date, end_date, frequency, asset, initial_balance)
 
+    # Store global values for later use
+    mstore.save('asset', asset)
+    mstore.save('simulation_id', simulation_id)
+    
     # process period
     error_message, period = process_period(simulation_id, asset, start_date, end_date, frequency)
 
@@ -55,6 +56,7 @@ def generate_report(simulation_id, period, error_message):
         final_report.send_to_csv()
     else:
         final_report.send_to_stdout()
+        final_report.plot_chart()
         
 def register_strategy(strategy: object, strategy_parms: list):
 
@@ -118,5 +120,3 @@ def check_for_close_on_last_day(simulation_id, asset, period):
             if result == 0:
                 break
 
-def store_global_values(asset):
-    mstore.save('asset', asset)
