@@ -40,22 +40,6 @@ class Decision_Helper():
         return exposable_amount
         
     def get_asset_current_market_price(self, asset, current_date):
-        
-        market_price = { 
-            "period" : None,
-            "open" : None,
-            "high" : None,
-            "low" : None,
-            "close" : None
-        }
-        
-        try:
-            current_market_price = mkt.select_market_data_by_current_date(asset, current_date)
-            market_price['open'] = current_market_price[1]
-            market_price['high'] = current_market_price[2]
-            market_price['low'] = current_market_price[3]
-            market_price['close'] = current_market_price[4]
-        except Exception as e:
-            return market_price            
-            
-        return market_price
+
+        result =  mkt.select_market_data_by_current_date(asset, current_date)
+        return result

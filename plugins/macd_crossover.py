@@ -22,7 +22,9 @@ class MacdCrossOver():
         decision = None
         position_type = None
         
-        _,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,self.yesterdays_macd,cbl,_,_ = self.select_market_data_by_current_date(self.asset, period)
+        result = self.select_market_data_by_current_date(self.asset, period)
+        cbl = result['cbl']
+        self.yesterdays_macd = result['macd_diff']
         
         if self.yesterdays_macd <= 0:
             self.yesterdays_updown_macd = 'DOWN'
@@ -90,8 +92,13 @@ class MacdCrossOver():
         
         decision = None
         
-        _,_,_,high,low,_,_,_,_,adr,_,_,_,_,_,_,_,_,_,_,_,_,_,self.yesterdays_macd,cbl,_,_ = self.select_market_data_by_current_date(self.asset, period)
-            
+        result = self.select_market_data_by_current_date(self.asset, period)
+        high = result['high']
+        low = result['low']
+        cbl = result['cbl']
+        adr = result['avg_daily_range']
+        self.yesterdays_macd = result['macd_diff']
+
         if self.yesterdays_macd <= 0:
             self.yesterdays_updown_macd = 'DOWN'
         else:
@@ -140,9 +147,10 @@ class MacdCrossOver():
         try:
             with sqlite3.connect(f'data.db') as conn:
                 cursor = conn.cursor()
-                result = cursor.execute(f'SELECT *,MAX(datetime) FROM market_data WHERE asset = :asset and datetime < :datetime', {"asset" : asset, "datetime" : datetime_obj})
+                result = cursor.execute(f'SELECT *,MAX(datetime) FROM historical_data WHERE asset = :asset and datetime < :datetime', {"asset" : asset, "datetime" : datetime_obj})
                 conn.commit()
-                ret = result.fetchone()
-                return ret
+                columns = [desc[0] for desc in cursor.description]
+                data = dict(zip(columns, result.fetchone()))
+                return data
         except Exception as e:
             print(e)

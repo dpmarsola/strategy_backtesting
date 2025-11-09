@@ -2,3 +2,4 @@ sqlalchemy
 pandas
 requests
 matplotlib
+ta

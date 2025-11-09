@@ -288,8 +288,9 @@ class Report():
     
     def plot_chart(self):
         
-        dplot = data_plot.DataPlot()
-        dplot.execute(self.mplot_market_and_trades_data)
+        if not self.error_message:
+            dplot = data_plot.DataPlot()
+            dplot.execute(self.mplot_market_and_trades_data)
 
     def send_to_csv(self):
                 

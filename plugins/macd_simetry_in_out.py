@@ -137,7 +137,7 @@ class MacdSimetryInOut():
         try:
             with sqlite3.connect(f'data.db') as conn:
                 cursor = conn.cursor()
-                result = cursor.execute(f'SELECT *,MAX(datetime) FROM market_data WHERE asset = :asset and datetime < :datetime', {"asset" : asset, "datetime" : datetime_obj})
+                result = cursor.execute(f'SELECT *,MAX(datetime) FROM historical_data WHERE asset = :asset and datetime < :datetime', {"asset" : asset, "datetime" : datetime_obj})
                 conn.commit()
                 ret = result.fetchone()
                 return ret

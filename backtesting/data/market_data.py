@@ -4,13 +4,18 @@ from .. import constants
 def select_market_data_by_current_date(asset, current_date):
     
     datetime_obj = current_date.to_pydatetime().strftime("%Y-%m-%d %H:%M:%S")
-    
+    market_price_none = { "period": None, "open": None, "high": None, "low": None, "close": None}
+
     try:
         with sqlite3.connect(f'{constants.DATABASE_NAME}') as conn:
             cursor = conn.cursor()
             result = cursor.execute(f'SELECT * FROM {constants.MARKET_DATA_TABLE} WHERE asset = :asset and datetime = :datetime', {"asset" : asset, "datetime" : datetime_obj})
+            columns = [desc[0] for desc in cursor.description]
+            data = dict(zip(columns, result.fetchone()))
             conn.commit()
-            return result.fetchone()
+            return data
+    except TypeError as nt:
+        return market_price_none
     except Exception as e:
         if "no such table" in e.__str__():
             print(f'Table {constants.MARKET_DATA_TABLE} not found in database {constants.DATABASE_NAME}. Run script to fetch market data.')
@@ -30,11 +35,9 @@ def select_all_market_data_by_period(asset, period_start, period_end):
             conn.commit()
             rows = result.fetchall()
             columns = [desc[0] for desc in cursor.description]
-            
             for row in rows:
                 data = dict(zip(columns, row))
                 market_data.append(data)
-            
             return market_data
     except Exception as e:
         if "no such table" in e.__str__():

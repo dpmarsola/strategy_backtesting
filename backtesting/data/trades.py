@@ -38,21 +38,10 @@ def select_trades_data_by_simulation_id(simulation_id):
             result = cursor.execute(f'SELECT * FROM {constants.TRADES_TABLE} WHERE simulation_id = :simulation_id', {"simulation_id" : simulation_id})
             conn.commit()
             rows = result.fetchall()
+            columns = [desc[0] for desc in cursor.description]
 
             for row in rows:
-                trade = {
-                        "trade_open_date" : row[0],
-                        "simulation_id" : row[1],
-                        "asset_under_simulation" : row[2],
-                        "position_type" : row[3],
-                        "position_amount" : row[4],
-                        "position_quantity" : row[5],
-                        "trade_close_date" : row[6],
-                        "trade_close_amount" : row[7],
-                        "profit_amount" : row[8],
-                        "profit_percentage" : row[9],
-                        "positioned" : False
-                        }
+                trade = dict(zip(columns, row))
                 trades.append(trade)
             
             return trades
@@ -85,9 +74,11 @@ def select_trades_sum_profit_amount(simulation_id, position_type):
     try:
         with sqlite3.connect(f'{constants.DATABASE_NAME}') as conn:
             cursor = conn.cursor()
-            result = cursor.execute(f'SELECT sum(profit_amount) FROM {constants.TRADES_TABLE} WHERE simulation_id = :simulation_id AND position_type = :position_type AND profit_amount >= 0;', {"simulation_id" : simulation_id, "position_type" : position_type})
+            result = cursor.execute(f'SELECT sum(profit_amount) as sum_profit FROM {constants.TRADES_TABLE} WHERE simulation_id = :simulation_id AND position_type = :position_type AND profit_amount >= 0;', {"simulation_id" : simulation_id, "position_type" : position_type})
             conn.commit()
-            amount = result.fetchone()[0]
+            columns = [desc[0] for desc in cursor.description]
+            data = dict(zip(columns, result.fetchone()))
+            amount = data['sum_profit']
             if  amount == None:
                 return 0
             else:
@@ -100,9 +91,11 @@ def select_trades_sum_loss_amount(simulation_id, position_type):
     try:
         with sqlite3.connect(f'{constants.DATABASE_NAME}') as conn:
             cursor = conn.cursor()
-            result = cursor.execute(f'SELECT sum(profit_amount) FROM {constants.TRADES_TABLE} WHERE simulation_id = :simulation_id AND position_type = :position_type AND profit_amount < 0;', {"simulation_id" : simulation_id, "position_type" : position_type})
+            result = cursor.execute(f'SELECT sum(profit_amount) as sum_profit FROM {constants.TRADES_TABLE} WHERE simulation_id = :simulation_id AND position_type = :position_type AND profit_amount < 0;', {"simulation_id" : simulation_id, "position_type" : position_type})
             conn.commit()
-            amount = result.fetchone()[0]
+            columns = [desc[0] for desc in cursor.description]
+            data = dict(zip(columns, result.fetchone()))
+            amount = data['sum_profit']
             if  amount == None:
                 return 0
             else:
@@ -117,26 +110,10 @@ def select_trades_open_by_simulation_id(simulation_id):
             cursor = conn.cursor()
             result = cursor.execute(f'SELECT * FROM {constants.TRADES_TABLE} WHERE simulation_id = :simulation_id AND trade_close_date = 0;', {"simulation_id" : simulation_id})
             conn.commit()
-            row = result.fetchone()
-            
-            if row == None:
-                trade = None
-            else:
-                trade = {
-                        "trade_open_date" : row[0],
-                        "simulation_id" : row[1],
-                        "asset_under_simulation" : row[2],
-                        "position_type" : row[3],
-                        "position_amount" : row[4],
-                        "position_quantity" : row[5],
-                        "trade_close_date" : row[6],
-                        "trade_close_amount" : row[7],
-                        "profit_amount" : row[8],
-                        "profit_percentage" : row[9],
-                        "positioned" : False
-                        }
-                
+            columns = [desc[0] for desc in cursor.description]
+            trade = dict(zip(columns, result.fetchone()))
             return trade
-            
+    except TypeError as te:
+        return None
     except Exception as e:
         print(e)
