@@ -29,9 +29,14 @@ LOW = 'low'
 WIN = "win"
 LOOSE = "loose"
 
-FREQUENCY = { 
-             'H' : 'Hourly',
-             'D' : 'Daily',
-             'W' : 'Weekly',
-             'M' : 'Montly' 
-            }
+FREQUENCY_TEXT = {'H1' : 'Hourly',
+            'H4' : '4 Hours',
+            'D1' : 'Daily',
+            'W1' : 'Weekly',
+            'M1' : 'Monthly'}
+
+FREQUENCY_PANDAS = {'H1' : 'h',
+            'H4' : '5h',
+            'D1' : 'D',
+            'W1' : 'W',
+            'M1' : 'ME'}

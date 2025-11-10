@@ -3,11 +3,11 @@ from .data import trades
 from .data import market_data
 from . import constants
 from . import data_plot
-from . import memory_store
+from . import globals
 import pandas as pd
 from datetime import datetime
 
-mstore = memory_store.MermoryStore()
+global_vars = globals.Globals()
 class Report():
 
     # Header section  
@@ -87,11 +87,11 @@ class Report():
         self.period_from = self.simulation_data['cycle_start']
         self.period_to = self.simulation_data['cycle_end']
         self.frequency = self.simulation_data['frequency']
-        self.prices_based_on = mstore.get(constants.PRICES_BASED_ON).upper()
-        self.strategy_description = mstore.get("strategy").description
-        self.exposable_cpt = mstore.get(constants.EXPOSABLE_PERCENTAGE)
-        self.lot_size = mstore.get(constants.LOT_SIZE)
-        self.number_of_testing_days = mstore.get("counter_testing_days")
+        self.prices_based_on = global_vars.get(constants.PRICES_BASED_ON).upper()
+        self.strategy_description = global_vars.get("strategy").description
+        self.exposable_cpt = global_vars.get(constants.EXPOSABLE_PERCENTAGE)
+        self.lot_size = global_vars.get(constants.LOT_SIZE)
+        self.number_of_testing_days = global_vars.get("counter_testing_days")
 
         # getting all the market date used in the simulation to calculate maximum drawdown
         self.prices = market_data.select_all_market_data_by_period(self.asset, period[0], period[-1])
@@ -234,7 +234,7 @@ class Report():
         self.text_period = f"From: {self.simulation_data['cycle_start']} To: {self.simulation_data['cycle_end']}"
         self.text_price_considered = f"Positions are opened and closed based on the {self.prices_based_on.upper()} price"
         self.text_exposable_cpt = f"Exposing a maximum of {self.exposable_cpt} % of the available (current) balance on each trade"
-        self.text_frequency =  f"{constants.FREQUENCY[self.frequency]}"
+        self.text_frequency =  f"{constants.FREQUENCY_TEXT[self.frequency]}"
         
         output = f'\n'
         output += f'{"-"*161}\n'
@@ -355,6 +355,6 @@ class Report():
         df = pd.DataFrame([data])
 
         # Save to CSV
-        df.to_csv(mstore.get(constants.OUTPUT_FILE), index=False)
+        df.to_csv(global_vars.get(constants.OUTPUT_FILE), index=False)
 
         print("✅ Saved trading stats to trading_stats.csv")        

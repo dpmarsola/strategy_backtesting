@@ -3,17 +3,17 @@ import pandas as pd
 from . import decision_helper as dh
 from . import operate as op
 from . import constants
-from . import memory_store
+from . import globals
 from . import parms
 
 dhelper = dh.Decision_Helper()
 operate = op.Operate()
-mstore = memory_store.MermoryStore()
+global_vars = globals.Globals()
 
 def execute(simulation_id, current_date, asset, force_close=False):
     
     market_price = dhelper.get_asset_current_market_price(asset, current_date)
-    prices_based_on = mstore.get(constants.PRICES_BASED_ON)
+    prices_based_on = global_vars.get(constants.PRICES_BASED_ON)
     
     asset_current_market_price = None
     
@@ -31,7 +31,7 @@ def execute(simulation_id, current_date, asset, force_close=False):
         
     if asset_current_market_price != None:
         trade = dhelper.check_trade_status(simulation_id)
-        strategy = memory_store.MermoryStore().get("strategy")
+        strategy = globals.Globals().get("strategy")
         
         if trade["positioned"] == True:            
             if force_close == True:
@@ -59,12 +59,12 @@ def execute(simulation_id, current_date, asset, force_close=False):
                 
 def count_trading_days():
     
-    count_number_trading_days = mstore.get("counter_testing_days")
+    count_number_trading_days = global_vars.get("counter_testing_days")
     
     if count_number_trading_days == None:
-        mstore.save("counter_testing_days", 0)
+        global_vars.save("counter_testing_days", 0)
         count_number_trading_days = 0
     
     count_number_trading_days += 1
     
-    mstore.save("counter_testing_days", count_number_trading_days)
+    global_vars.save("counter_testing_days", count_number_trading_days)

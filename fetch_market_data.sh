@@ -26,7 +26,7 @@ fi
 ## get args from command line
 if [ ${#@} -ne "4" ]; then
     echo " "
-    echo "No service specified. Usage: ./fetch_simulation_data.sh <ticker> <timeframe>  <initial_date> <end_date>"
+    echo "No service specified. Usage: ./fetch_simulation_data.sh <ticker> <timeframe>  <initial_date> <end_datetime>"
     echo " "
     echo "For CLI, provide the following arguments:"
     echo "  Ticker: The stock ticker symbol (e.g., AAPL)"

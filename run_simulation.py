@@ -10,8 +10,8 @@ parser = argparse.ArgumentParser(prog="run_simulation.py",
 parser.add_argument('strategy', help='Plugin Class that implements a stragey to get in ou out of a trade during simulation.')
 parser.add_argument('ticker_symbol', help='The ticker symbol for the asset under simulation.')
 parser.add_argument('frequency', help='The frequency for the simulation ticker analysis.')
-parser.add_argument('start_date', help='The date the simulation will start.')
-parser.add_argument('end_date', help='The date the simulation will end.')
+parser.add_argument('start_datetime', help='The date the simulation will start.')
+parser.add_argument('end_datetime', help='The date the simulation will end.')
 parser.add_argument('initial_balance', type=int, help='The balance to begin the simulation.')
 parser.add_argument('--exposable-capital', metavar='', type=int, default=100, help='Percentage of the capital the simulation can expose during a trade. DEFAULT: %(default)s (%%)')
 parser.add_argument('--lot-size', metavar='', type=int, default=100, help='The number of shares in 1 lot for the market being simulated. DEFAULT: %(default)s (shares/lot)')
@@ -60,8 +60,8 @@ if flag_strgy_found:
                 if 'class' in str(v):
                     class_name=k
         strategy = eval(f"plugin_module.{class_name}")
-        start_date = args.start_date
-        end_date = args.end_date
+        start_datetime = args.start_datetime
+        end_datetime = args.end_datetime
         frequency = args.frequency
         asset = args.ticker_symbol
         initial_balance = args.initial_balance
@@ -73,7 +73,7 @@ if flag_strgy_found:
         strategy_parms = args.strategy_parms
         
         sim.register_strategy(strategy(), strategy_parms)
-        sim.simulate(start_date, end_date, frequency, asset, initial_balance, exposable_percentage=exposable_percentage, lot_size=lot_size, prices_based_on=prices_based_on, close_on_last_day=close_on_last_day, output_file=output_file)
+        sim.simulate(start_datetime, end_datetime, frequency, asset, initial_balance, exposable_percentage=exposable_percentage, lot_size=lot_size, prices_based_on=prices_based_on, close_on_last_day=close_on_last_day, output_file=output_file)
     except ImportError as e:
         print(f'{"-"*160}')
         print(f"Error loading plugin {plugin_name}: {e}")

@@ -1,8 +1,8 @@
 import sqlite3
 from pathlib import Path
-import backtesting.memory_store as ms
+import backtesting.globals as ms
 
-mstore = ms.MermoryStore()
+global_vars = ms.Globals()
 class MacdSimetryInOut():
     
     description = f'''Monitors the MACD indicator and trigger a signal when there is an invertion and a confirmation on the third consecutive bar.
@@ -19,8 +19,8 @@ class MacdSimetryInOut():
         
     def signal_in(self, period):
         
-        self.asset = mstore.get('asset')
-        self.allow_short_trades = mstore.get('allow-short')
+        self.asset = global_vars.get('asset')
+        self.allow_short_trades = global_vars.get('allow-short')
         decision = None
         position_type = None
         

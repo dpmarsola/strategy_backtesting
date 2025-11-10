@@ -1,9 +1,9 @@
 import sqlite3
 from pathlib import Path
-import backtesting.memory_store as ms
+import backtesting.globals as ms
 import backtesting.constants as constants
 
-mstore = ms.MermoryStore()
+global_vars = ms.Globals()
 class EmaCrossover():
     
     description = f'''When a Fast EMA crosses above the Slow EMA it trigger a buy signal, otherwise it triggers a sell one.'''
@@ -14,8 +14,8 @@ class EmaCrossover():
         
     def signal_in(self, period):
         
-        self.asset = mstore.get('asset')
-        self.allow_short_trades = eval(mstore.get('allow-short'))
+        self.asset = global_vars.get('asset')
+        self.allow_short_trades = eval(global_vars.get('allow-short'))
         decision = None
         position_type = None
         market_data = self.select_market_data_by_current_date(self.asset, period)

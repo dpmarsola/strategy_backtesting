@@ -3,9 +3,9 @@ from .data import simulation
 from .data import trades
 from . import decision_helper
 from . import parms
-from . import memory_store
+from . import globals
 
-mstore = memory_store.MermoryStore()
+global_vars = globals.Globals()
 dhelper = decision_helper.Decision_Helper()
 class Operate():
     
@@ -23,7 +23,7 @@ class Operate():
         
         # given the amount to be exposed, determine the maximum quantity that is possible to operate under current market price of this asset
         max_quantity_possible = exposed_amount // asset_current_market_price
-        lot_size = mstore.get(constants.LOT_SIZE)
+        lot_size = global_vars.get(constants.LOT_SIZE)
         
         # If the maximum possible quantity is less than 1 LOT_SIZE then this position cannot be opened.
         if lot_size > max_quantity_possible:

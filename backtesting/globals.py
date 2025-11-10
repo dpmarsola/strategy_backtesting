@@ -1,4 +1,4 @@
-class MermoryStore():
+class Globals():
     
     _instance = None
     _store = {}
@@ -16,3 +16,6 @@ class MermoryStore():
 
     def clear(self):
         self._store.clear()
+
+    def list_all_globals(self):
+        return self._store

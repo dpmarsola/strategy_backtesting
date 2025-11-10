@@ -4,11 +4,11 @@ from pandas.plotting import register_matplotlib_converters
 import numpy as np
 from datetime import datetime
 import warnings
-from . import memory_store
+from . import globals
 register_matplotlib_converters()
 warnings.filterwarnings("ignore")
 
-mstore = memory_store.MermoryStore()
+global_vars = globals.Globals()
 
 class DataPlot():
 
@@ -19,7 +19,7 @@ class DataPlot():
     def __save_fig(self):
         plt.figure(figsize=(60, 48), dpi=80, layout='tight')
         # filename = f"./{datetime.now().strftime('%d%m%Y_%H%M%S')}.jpg"
-        filename = f"./output/{mstore.get('simulation_id')}.jpg"
+        filename = f"./output/{global_vars.get('simulation_id')}.jpg"
         self.fig.savefig(filename,transparent=None, dpi='figure', format=None,
         metadata=None, bbox_inches=None, pad_inches=0.1,facecolor='auto', edgecolor='auto', backend=None)
         plt.close('all')

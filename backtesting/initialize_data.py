@@ -8,7 +8,7 @@ def database_init():
     return init_db.create_database()
     
     
-def tables_init(start_date, end_date, frequency, asset, initial_balance):
+def tables_init(start_datetime, end_datetime, frequency, asset, initial_balance):
 
     data_dir = f'./{init_db.__package__.replace(".","/")}'
     init_db.create_tables(data_dir)
@@ -20,6 +20,6 @@ def tables_init(start_date, end_date, frequency, asset, initial_balance):
     result = sim.select_simulation_data_by_id(simulation_id)
  
     if result == None:
-        sim.insert_simulation_data((simulation_id, start_date, end_date, frequency, asset, initial_balance, initial_balance))
+        sim.insert_simulation_data((simulation_id, start_datetime, end_datetime, frequency, asset, initial_balance, initial_balance))
         
     return simulation_id
