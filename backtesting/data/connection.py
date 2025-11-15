@@ -1,5 +1,5 @@
 import sqlite3
-from .. import constants
+import backtesting.constants as constants
 
 
 def get_connection():

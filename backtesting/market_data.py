@@ -28,7 +28,7 @@ response = requests.get(url)
 df = pd.read_json(response.text)
 # df['datetime'] = pd.to_datetime(df['time'], unit='s')
 df['asset'] = ticker
-df.to_sql(name="historical_data", con=conn, if_exists='append', index_label='datetime')
+df.to_sql(name="historical_data", con=conn, if_exists='replace', index_label='datetime')
 
-print("Data fetched successfully!")
+print(f"{df.shape[0]} items fetched successfully!")
 

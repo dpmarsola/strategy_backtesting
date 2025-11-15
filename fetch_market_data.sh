@@ -8,11 +8,7 @@ fi
 ## Activate the venv
 ## If this is a git bash shell on Windows, use source venv/Scripts/activate
 ## Otherwise, use source venv/bin/activate
-if [[ "$OSTYPE" == "msys" ]]; then
-    source venv/Scripts/activate
-else
-    source venv/bin/activate
-fi
+source ./venv/bin/activate
 
 if [ "$flag_created_venv" = true ]; then
     echo "Virtual environment created and activated."
@@ -40,3 +36,4 @@ export PYTHONPATH=$(pwd)
 
 echo "Fetching Data..."
 python3 -m backtesting.market_data $1 $2 $3 $4
+python3 -m backtesting.calculate_indicators

@@ -1,16 +1,11 @@
 import trend_sniper.lib.context
-from trend_sniper.lib.indicators import atr
-from trend_sniper.lib.indicators import cbl
-from trend_sniper.lib.indicators import adr
-from trend_sniper.lib.indicators import macd
-from trend_sniper.lib.indicators import guppy
-import requests
+from trend_sniper.lib.indicators import (atr, cbl, adr, macd, guppy, rsi)
+
 import  pandas as pd
 import warnings
 import sqlite3
 import backtesting.constants as constants
-import backtesting.data.initialize_db
-from backtesting.data import connection
+import backtesting.data.connection as connection
 
 
 
@@ -62,7 +57,7 @@ timeframe = 'D1'
 initial_period = '2025-08-01'
 end_period = '2025-08-30'
 
-print("Fetching Historical Data...")
+print("Adding indicators to Historical Data...")
 
 
 df = pd.DataFrame(select_all(ticker))
@@ -84,15 +79,19 @@ atr_multiplier = ctx_helper.get_context_specific_data(ctx_load.context, 'atr_smp
 adr_periods = ctx_helper.get_context_specific_data(ctx_load.context, 'adr', 'indicator', 'data.adr_period')
 adr_multiplier = ctx_helper.get_context_specific_data(ctx_load.context, 'adr', 'indicator', 'data.adr_multiplier')
 guppy_periods = tuple(ctx_helper.get_context_specific_data(ctx_load.context, 'guppy', 'indicator', 'data.guppy_periods'))
+rsi_periods = ctx_helper.get_context_specific_data(ctx_load.context, 'rsi', 'indicator', 'data.rsi_period')
 
 df = atr.ATR().calculate(df, atr_periods, atr_multiplier)
 df = adr.ADR().calculate(df,adr_periods, adr_multiplier)
 df = cbl.CBL().calculate(df)
 df = guppy.Guppy().calculate(df, guppy_periods)
 df = macd.MACD().calculate(df)
+df = rsi.RSI().calculate(df, rsi_periods)
 df = df.set_index('datetime')
 
 conn = connection.get_connection()
 cursor = conn.cursor()
 cursor.execute("DROP TABLE IF EXISTS historical_data;")
 df.to_sql(name="historical_data", con=conn, if_exists='replace', index_label='datetime')
+
+print(f"{df.shape[0]} rows updated with indicators!")

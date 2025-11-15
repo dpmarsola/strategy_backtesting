@@ -103,35 +103,8 @@ class EmaCrossoverWithMacd():
                 cursor = conn.cursor()
                 result = cursor.execute(f'SELECT *,MAX(datetime) FROM historical_data WHERE asset = :asset and datetime < :datetime', {"asset" : asset, "datetime" : datetime_obj})
                 conn.commit()
-                row = result.fetchone()
-                market_data = {
-                        "datetime": row[0],
-                        "time": row[1],
-                        "open": row[2],
-                        "high": row[3],
-                        "low": row[4],
-                        "close": row[5],
-                        "tick_volume": row[6],
-                        "spread": row[7],
-                        "real_volume": row[8],
-                        "avg_daily_range": row[9],
-                        "ema_f1": row[10],
-                        "ema_f2": row[11],
-                        "ema_f3": row[12],
-                        "ema_f4": row[13],
-                        "ema_f5": row[14],
-                        "ema_f6": row[15],
-                        "ema_s1": row[16],
-                        "ema_s2": row[17],
-                        "ema_s3": row[18],
-                        "ema_s4": row[19],
-                        "ema_s5": row[20],
-                        "ema_s6": row[21],
-                        "avg_true_range": row[22],
-                        "macd_diff": row[23],
-                        "cbl": row[24],
-                        "asset": row[25]
-                    }
+                columns = [desc[0] for desc in cursor.description]
+                market_data = dict(zip(columns, result.fetchone()))
                 return market_data
         except Exception as e:
             print(e)
