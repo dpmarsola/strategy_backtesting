@@ -36,4 +36,3 @@ export PYTHONPATH=$(pwd)
 
 echo "Fetching Data..."
 python3 -m backtesting.market_data $1 $2 $3 $4
-python3 -m backtesting.calculate_indicators
